@@ -1,0 +1,1116 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>عيادة - نظام التسجيل والاشتراكات</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800&display=swap');
+
+:root {
+  --primary: #1a6b5a;
+  --primary-light: #2d9474;
+  --primary-pale: #e8f5f2;
+  --accent: #f0a500;
+  --danger: #e05252;
+  --danger-light: #fdf0f0;
+  --text: #1a2330;
+  --text-muted: #6b7a8d;
+  --border: #e2e8f0;
+  --bg: #f7f9fc;
+  --white: #fff;
+  --card-radius: 16px;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Tajawal', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; font-size: 15px; }
+
+/* ===== الشاشات ===== */
+.screen { display: none; min-height: 100vh; }
+.screen.active { display: flex; }
+
+/* ===== خلفية ===== */
+.auth-bg {
+  flex: 1;
+  background: linear-gradient(135deg, #0f4035 0%, #1a6b5a 50%, #2d9474 100%);
+  display: flex; align-items: center; justify-content: center;
+  padding: 24px; position: relative; overflow: hidden;
+}
+.auth-bg::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+}
+
+/* ===== البطاقة ===== */
+.auth-card {
+  background: #fff;
+  border-radius: 24px;
+  padding: 40px 36px;
+  width: 460px;
+  max-width: 100%;
+  box-shadow: 0 30px 80px rgba(0,0,0,0.25);
+  position: relative; z-index: 1;
+}
+
+.auth-logo { text-align: center; margin-bottom: 28px; }
+.auth-logo-icon {
+  width: 64px; height: 64px; border-radius: 18px;
+  background: var(--primary);
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 28px; margin-bottom: 10px;
+}
+.auth-logo h1 { font-size: 22px; font-weight: 800; color: var(--text); }
+.auth-logo p { font-size: 13px; color: var(--text-muted); margin-top: 3px; }
+
+.auth-tabs { display: flex; background: var(--bg); border-radius: 12px; padding: 4px; margin-bottom: 24px; }
+.auth-tab {
+  flex: 1; padding: 10px; border: none; background: none;
+  border-radius: 9px; font-family: 'Tajawal', sans-serif;
+  font-size: 14px; font-weight: 600; color: var(--text-muted);
+  cursor: pointer; transition: all .18s;
+}
+.auth-tab.active { background: #fff; color: var(--primary); box-shadow: 0 2px 8px rgba(0,0,0,.08); }
+
+.form-group { margin-bottom: 16px; }
+label { font-size: 13px; font-weight: 600; color: var(--text); display: block; margin-bottom: 6px; }
+.input-wrap { position: relative; }
+.input-wrap .input-icon { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); font-size: 16px; }
+input[type="text"], input[type="tel"], input[type="email"], input[type="password"], select {
+  width: 100%; padding: 12px 40px 12px 14px;
+  border: 1.5px solid var(--border); border-radius: 10px;
+  font-family: 'Tajawal', sans-serif; font-size: 15px; color: var(--text);
+  transition: border-color .18s; outline: none; background: #fff;
+}
+input:focus, select:focus { border-color: var(--primary); }
+
+.phone-row { display: flex; gap: 8px; align-items: stretch; }
+.country-code {
+  width: 72px; padding: 12px 6px;
+  border: 1.5px solid var(--border); border-radius: 10px;
+  font-family: 'Tajawal', sans-serif; font-size: 13px;
+  background: var(--bg); color: var(--text); outline: none;
+  text-align: center; flex-shrink: 0;
+}
+.phone-row .input-wrap { flex: 1; min-width: 0; }
+
+.otp-row { display: flex; gap: 10px; justify-content: center; margin: 8px 0; }
+.otp-input {
+  width: 52px; height: 56px; text-align: center;
+  font-size: 22px; font-weight: 700;
+  border: 2px solid var(--border); border-radius: 12px;
+  font-family: 'Tajawal', sans-serif; color: var(--text); outline: none;
+  transition: border-color .18s;
+}
+.otp-input:focus { border-color: var(--primary); }
+
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  padding: 13px 20px; border-radius: 11px;
+  font-family: 'Tajawal', sans-serif; font-size: 15px;
+  font-weight: 700; cursor: pointer; border: none; transition: all .18s;
+  width: 100%;
+}
+.btn-primary { background: var(--primary); color: #fff; }
+.btn-primary:hover { background: var(--primary-light); }
+.btn-outline { background: transparent; color: var(--primary); border: 2px solid var(--primary); }
+.btn-outline:hover { background: var(--primary-pale); }
+.btn-whatsapp { background: #25d366; color: #fff; }
+.btn-whatsapp:hover { background: #1ebe5d; }
+.btn-sm { padding: 8px 16px; font-size: 13px; width: auto; }
+.btn:disabled { opacity: .5; cursor: not-allowed; }
+
+.alert {
+  padding: 12px 16px; border-radius: 10px;
+  font-size: 13px; font-weight: 600; margin-bottom: 16px;
+  display: none;
+}
+.alert-error { background: var(--danger-light); color: var(--danger); border: 1px solid #f5c6c6; }
+.alert-success { background: var(--primary-pale); color: var(--primary); border: 1px solid #b2ddd4; }
+.alert-warning { background: #fff8e6; color: #b07800; border: 1px solid #ffe299; }
+
+.divider { text-align: center; margin: 16px 0; color: var(--text-muted); font-size: 12px; position: relative; }
+.divider::before, .divider::after { content: ''; position: absolute; top: 50%; width: 42%; height: 1px; background: var(--border); }
+.divider::before { right: 0; }
+.divider::after { left: 0; }
+
+/* ===== خطط الاشتراك ===== */
+.plans-grid { display: grid; grid-template-columns: 1fr; gap: 12px; margin: 16px 0; }
+.plan-card {
+  border: 2px solid var(--border); border-radius: 14px;
+  padding: 16px; cursor: pointer; transition: all .18s; position: relative;
+}
+.plan-card:hover { border-color: var(--primary); background: var(--primary-pale); }
+.plan-card.selected { border-color: var(--primary); background: var(--primary-pale); }
+.plan-badge {
+  position: absolute; top: -10px; right: 16px;
+  background: var(--accent); color: #fff;
+  font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 20px;
+}
+.plan-name { font-size: 15px; font-weight: 800; color: var(--text); }
+.plan-price { font-size: 20px; font-weight: 800; color: var(--primary); margin: 4px 0; }
+.plan-price span { font-size: 12px; font-weight: 500; color: var(--text-muted); }
+.plan-features { font-size: 12px; color: var(--text-muted); line-height: 1.7; }
+
+/* ===== شاشة الاشتراك المنتهي ===== */
+#expired-screen {
+  background: linear-gradient(135deg, #0f4035 0%, #1a6b5a 100%);
+  flex-direction: column; align-items: center; justify-content: center;
+  padding: 24px; text-align: center;
+}
+.expired-card {
+  background: #fff; border-radius: 24px; padding: 40px 36px;
+  max-width: 480px; width: 100%;
+  box-shadow: 0 30px 80px rgba(0,0,0,0.25);
+}
+.expired-icon { font-size: 56px; margin-bottom: 16px; }
+.expired-title { font-size: 22px; font-weight: 800; color: var(--text); margin-bottom: 8px; }
+.expired-sub { font-size: 14px; color: var(--text-muted); margin-bottom: 24px; line-height: 1.6; }
+.days-left {
+  background: #fff3cc; border: 2px solid var(--accent);
+  border-radius: 12px; padding: 14px; margin-bottom: 20px;
+  font-size: 15px; font-weight: 700; color: #b07800;
+}
+
+/* ===== لوحة المدير ===== */
+#admin-screen {
+  flex-direction: column; min-height: 100vh; background: var(--bg);
+}
+.admin-topbar {
+  background: var(--primary); padding: 0 28px; height: 60px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.admin-topbar h1 { font-size: 18px; font-weight: 800; color: #fff; }
+.admin-content { padding: 28px; flex: 1; }
+.admin-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 24px; }
+.admin-stat {
+  background: #fff; border-radius: 14px; padding: 20px;
+  border: 1px solid var(--border); text-align: center;
+}
+.admin-stat-val { font-size: 32px; font-weight: 800; color: var(--primary); }
+.admin-stat-label { font-size: 13px; color: var(--text-muted); margin-top: 4px; }
+.card { background: #fff; border-radius: var(--card-radius); border: 1px solid var(--border); overflow: hidden; margin-bottom: 20px; }
+.card-header { padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+.card-title { font-size: 15px; font-weight: 700; }
+.card-body { padding: 20px; }
+table { width: 100%; border-collapse: collapse; }
+th { text-align: right; font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; padding: 10px 16px; background: var(--bg); border-bottom: 1px solid var(--border); }
+td { padding: 13px 16px; border-bottom: 1px solid var(--border); font-size: 14px; vertical-align: middle; }
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: var(--bg); }
+.badge { display: inline-flex; align-items: center; padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+.badge-green { background: var(--primary-pale); color: var(--primary); }
+.badge-amber { background: #fff3cc; color: #b07800; }
+.badge-red { background: var(--danger-light); color: var(--danger); }
+.badge-gray { background: #f0f0f0; color: #666; }
+.badge-blue { background: #e8f0ff; color: #2a5bd7; }
+
+.action-btn {
+  padding: 6px 14px; border-radius: 8px; border: none;
+  font-family: 'Tajawal', sans-serif; font-size: 12px; font-weight: 700;
+  cursor: pointer; transition: all .18s;
+}
+.btn-activate { background: var(--primary-pale); color: var(--primary); }
+.btn-activate:hover { background: var(--primary); color: #fff; }
+.btn-deactivate { background: var(--danger-light); color: var(--danger); }
+.btn-deactivate:hover { background: var(--danger); color: #fff; }
+.btn-delete { background: #f0f0f0; color: #666; }
+.btn-delete:hover { background: var(--danger); color: #fff; }
+
+.search-bar {
+  padding: 10px 16px; border: 1.5px solid var(--border); border-radius: 10px;
+  font-family: 'Tajawal', sans-serif; font-size: 14px; outline: none; width: 280px;
+}
+.search-bar:focus { border-color: var(--primary); }
+
+/* ===== تحميل ===== */
+.loading-overlay {
+  position: fixed; inset: 0; background: rgba(26,107,90,.92);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  z-index: 1000; color: #fff;
+}
+.loading-overlay.hidden { display: none; }
+.spinner {
+  width: 48px; height: 48px; border: 4px solid rgba(255,255,255,.3);
+  border-top-color: #fff; border-radius: 50%;
+  animation: spin .8s linear infinite; margin-bottom: 16px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.loading-text { font-size: 16px; font-weight: 600; }
+
+/* ===== اشعار انتهاء الاشتراك ===== */
+.sub-warning-banner {
+  background: #fff3cc; border-bottom: 2px solid var(--accent);
+  padding: 12px 20px; display: none; align-items: center; gap: 10px;
+  font-size: 13px; font-weight: 700; color: #b07800;
+}
+.sub-warning-banner.show { display: flex; }
+
+.step { display: none; }
+.step.active { display: block; }
+
+.resend-btn {
+  background: none; border: none; color: var(--primary);
+  font-family: 'Tajawal', sans-serif; font-size: 13px; font-weight: 700;
+  cursor: pointer; text-decoration: underline; margin-top: 8px;
+}
+.resend-btn:disabled { opacity: .5; cursor: not-allowed; }
+
+.timer-text { font-size: 12px; color: var(--text-muted); margin-top: 6px; text-align: center; }
+
+.footer-text { text-align: center; font-size: 12px; color: var(--text-muted); margin-top: 16px; }
+
+/* ===== تفعيل يدوي ===== */
+.activate-form { display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap; }
+.activate-form .form-group { flex: 1; min-width: 180px; margin-bottom: 0; }
+.activate-form select { padding: 11px 14px; }
+
+@media (max-width: 600px) {
+  .auth-card { padding: 28px 20px; }
+  .admin-grid { grid-template-columns: 1fr 1fr; }
+  .admin-content { padding: 16px; }
+  .search-bar { width: 100%; }
+  table { font-size: 12px; }
+  td, th { padding: 8px 10px; }
+}
+</style>
+</head>
+<body>
+
+<!-- تحميل -->
+<div class="loading-overlay" id="loading-overlay">
+  <div class="spinner"></div>
+  <div class="loading-text" id="loading-text">جاري التحميل...</div>
+</div>
+
+<!-- ===== شاشة التسجيل / الدخول ===== -->
+<div class="screen active auth-bg" id="auth-screen">
+  <div class="auth-card">
+    <div class="auth-logo">
+      <div class="auth-logo-icon">🏥</div>
+      <h1>نظام إدارة العيادات</h1>
+      <p>منصة متكاملة لإدارة عيادتك</p>
+    </div>
+
+    <div class="auth-tabs">
+      <button class="auth-tab active" onclick="switchAuthTab('login')">تسجيل الدخول</button>
+      <button class="auth-tab" onclick="switchAuthTab('register')">حساب جديد</button>
+    </div>
+
+    <div id="auth-alert" class="alert"></div>
+
+    <!-- تسجيل الدخول -->
+    <div id="login-form">
+      <div class="form-group">
+        <label>رقم الهاتف</label>
+        <div class="input-wrap">
+          <span class="input-icon">📱</span>
+          <input type="tel" id="login-phone" placeholder="07XX XXX XXXX" maxlength="11" style="width:100%;padding:12px 40px 12px 14px;border:1.5px solid var(--border);border-radius:10px;font-family:'Tajawal',sans-serif;font-size:15px;outline:none;">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>كلمة المرور</label>
+        <div class="input-wrap">
+          <span class="input-icon">🔒</span>
+          <input type="password" id="login-password" placeholder="••••••••">
+        </div>
+      </div>
+      <button class="btn btn-primary" onclick="doLogin()">دخول</button>
+      <div class="footer-text">نسيت كلمة المرور؟ <button class="resend-btn" onclick="switchAuthTab('register')">سجّل حساب جديد</button></div>
+    </div>
+
+    <!-- تسجيل جديد -->
+    <div id="register-form" style="display:none">
+
+      <!-- الخطوة 1: المعلومات -->
+      <div class="step active" id="reg-step-1">
+        <div class="form-group">
+          <label>اسم العيادة / المجمع</label>
+          <div class="input-wrap">
+            <span class="input-icon">🏥</span>
+            <input type="text" id="reg-clinic-name" placeholder="مثال: عيادة الشفاء">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>رقم الهاتف</label>
+          <div class="phone-row">
+            <input type="text" class="country-code" value="+964" readonly>
+            <div class="input-wrap" style="flex:1">
+              <span class="input-icon">📱</span>
+              <input type="tel" id="reg-phone" placeholder="07XX XXX XXXX" maxlength="11">
+            </div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>البريد الإلكتروني</label>
+          <div class="input-wrap">
+            <span class="input-icon">📧</span>
+            <input type="email" id="reg-email" placeholder="example@email.com">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>كلمة المرور</label>
+          <div class="input-wrap">
+            <span class="input-icon">🔒</span>
+            <input type="password" id="reg-password" placeholder="8 أحرف على الأقل">
+          </div>
+        </div>
+        <button class="btn btn-primary" onclick="sendOTP()">التحقق من الرقم ←</button>
+      </div>
+
+      <!-- الخطوة 2: OTP -->
+      <div class="step" id="reg-step-2">
+        <p style="text-align:center; color:var(--text-muted); font-size:13px; margin-bottom:20px;">
+          أرسلنا رمز تحقق إلى رقمك<br>
+          <strong id="otp-phone-display" style="color:var(--text)"></strong>
+        </p>
+        <div class="otp-row">
+          <input type="text" class="otp-input" maxlength="1" id="otp-1" oninput="otpNext(this,null,'otp-2')">
+          <input type="text" class="otp-input" maxlength="1" id="otp-2" oninput="otpNext(this,'otp-1','otp-3')">
+          <input type="text" class="otp-input" maxlength="1" id="otp-3" oninput="otpNext(this,'otp-2','otp-4')">
+          <input type="text" class="otp-input" maxlength="1" id="otp-4" oninput="otpNext(this,'otp-3','otp-5')">
+          <input type="text" class="otp-input" maxlength="1" id="otp-5" oninput="otpNext(this,'otp-4','otp-6')">
+          <input type="text" class="otp-input" maxlength="1" id="otp-6" oninput="otpNext(this,'otp-5',null)">
+        </div>
+        <div style="text-align:center;">
+          <button class="resend-btn" id="resend-btn" onclick="resendOTP()">إعادة إرسال الرمز</button>
+          <div class="timer-text" id="otp-timer"></div>
+        </div>
+        <br>
+        <button class="btn btn-primary" onclick="verifyOTP()">تحقق ←</button>
+        <button class="btn btn-outline" style="margin-top:8px" onclick="goRegStep(1)">← رجوع</button>
+      </div>
+
+      <!-- الخطوة 3: الخطة -->
+      <div class="step" id="reg-step-3">
+        <p style="font-size:13px; color:var(--text-muted); margin-bottom:12px; text-align:center;">اختر الخطة المناسبة أو ابدأ مجاناً لمدة 14 يوم</p>
+
+        <div class="plans-grid">
+          <div class="plan-card selected" id="plan-trial" onclick="selectPlan('trial')">
+            <div class="plan-badge">مجاني</div>
+            <div class="plan-name">🎁 تجريبي مجاني</div>
+            <div class="plan-price">0 <span>دينار / 14 يوم</span></div>
+            <div class="plan-features">دكتور + سكرتير + صيدلاني<br>⚠️ تُحذف جميع البيانات بعد انتهاء الفترة</div>
+          </div>
+
+          <div class="plan-card" id="plan-basic" onclick="selectPlan('basic')">
+            <div class="plan-name">🏥 عيادة أساسية</div>
+            <div class="plan-price">30,000 <span>دينار / شهر</span></div>
+            <div class="plan-features">دكتور + صيدلاني + سكرتير</div>
+          </div>
+
+          <div class="plan-card" id="plan-medium" onclick="selectPlan('medium')">
+            <div class="plan-badge" style="background:var(--primary)">الأكثر طلباً</div>
+            <div class="plan-name">🏨 مجمع طبي صغير</div>
+            <div class="plan-price">100,000 <span>دينار / شهر</span></div>
+            <div class="plan-features">5 أطباء + صيدلاني + 1-5 سكرتيرين (اختياري)</div>
+          </div>
+
+          <div class="plan-card" id="plan-large" onclick="selectPlan('large')">
+            <div class="plan-name">🏦 مجمع طبي كبير</div>
+            <div class="plan-price">250,000 <span>دينار / شهر</span></div>
+            <div class="plan-features">15 طبيب + 1-15 سكرتير (اختياري) + صيدلاني<br>إرسال الوصفات للصيدلي مباشرة</div>
+          </div>
+        </div>
+
+        <button class="btn btn-primary" id="plan-submit-btn" onclick="completePlanSelection()">إنشاء الحساب ←</button>
+        <button class="btn btn-outline" style="margin-top:8px" onclick="goRegStep(2)">← رجوع</button>
+      </div>
+
+      <!-- الخطوة 4: الدفع -->
+      <div class="step" id="reg-step-4">
+        <div style="text-align:center; margin-bottom:20px;">
+          <div style="font-size:40px; margin-bottom:8px;">💳</div>
+          <div style="font-size:16px; font-weight:800; color:var(--text)">إتمام الدفع</div>
+          <div style="font-size:13px; color:var(--text-muted); margin-top:4px;" id="pay-plan-summary"></div>
+        </div>
+
+        <div style="background:var(--bg); border-radius:12px; padding:16px; margin-bottom:16px;">
+          <div style="font-size:13px; font-weight:700; margin-bottom:10px; color:var(--text)">اختر طريقة الدفع:</div>
+          <div style="display:flex; flex-direction:column; gap:8px;">
+            <button class="btn btn-primary" onclick="payWhatsapp('zain')">
+              📱 زين كاش — تواصل معنا على واتساب
+            </button>
+            <button class="btn" style="background:#4CAF50;color:#fff;" onclick="payWhatsapp('mastercard')">
+              💳 ماستر كارد / سوبر كي — تواصل معنا على واتساب
+            </button>
+          </div>
+        </div>
+
+        <div style="background:#fff3cc; border-radius:10px; padding:12px; font-size:12px; color:#b07800; line-height:1.7;">
+          ⚠️ بعد التحويل، يتم تفعيل اشتراكك خلال ساعة واحدة من قِبل فريقنا.
+        </div>
+
+        <button class="btn btn-outline" style="margin-top:12px" onclick="goRegStep(3)">← رجوع</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ===== شاشة انتهاء الاشتراك ===== -->
+<div class="screen" id="expired-screen">
+  <div class="expired-card">
+    <div class="expired-icon" id="exp-icon">⚠️</div>
+    <div class="expired-title" id="exp-title">انتهى الاشتراك</div>
+    <div class="expired-sub" id="exp-sub">انتهت فترة اشتراكك. يرجى التجديد للاستمرار في استخدام النظام.</div>
+    <div class="days-left" id="exp-days" style="display:none"></div>
+    <button class="btn btn-whatsapp" onclick="renewWhatsapp()">
+      💬 تجديد الاشتراك عبر واتساب
+    </button>
+    <button class="btn btn-outline" style="margin-top:8px" onclick="doLogout()">تسجيل الخروج</button>
+  </div>
+</div>
+
+<!-- ===== لوحة المدير ===== -->
+<div class="screen" id="admin-screen">
+  <div style="flex:1; flex-direction:column; display:flex; min-height:100vh;">
+    <div class="admin-topbar">
+      <div>
+        <h1>🛡️ لوحة تحكم المدير</h1>
+        <div style="font-size:11px; color:rgba(255,255,255,.6); margin-top:2px;">عبدالله — صلاحيات مطلقة</div>
+      </div>
+      <button class="btn btn-sm" style="background:rgba(255,255,255,.15);color:#fff;width:auto;" onclick="doLogout()">خروج</button>
+    </div>
+
+    <div class="admin-content">
+      <div class="admin-grid">
+        <div class="admin-stat">
+          <div class="admin-stat-val" id="stat-total">0</div>
+          <div class="admin-stat-label">إجمالي العيادات</div>
+        </div>
+        <div class="admin-stat">
+          <div class="admin-stat-val" id="stat-active" style="color:#1a6b5a">0</div>
+          <div class="admin-stat-label">نشطة</div>
+        </div>
+        <div class="admin-stat">
+          <div class="admin-stat-val" id="stat-trial" style="color:#f0a500">0</div>
+          <div class="admin-stat-label">تجريبية</div>
+        </div>
+      </div>
+
+      <!-- تفعيل يدوي -->
+      <div class="card">
+        <div class="card-header"><div class="card-title">⚡ تفعيل اشتراك يدوي</div></div>
+        <div class="card-body">
+          <div class="activate-form">
+            <div class="form-group">
+              <label>رقم الهاتف</label>
+              <input type="tel" id="act-phone" placeholder="07XX XXX XXXX" style="padding:11px 14px; border:1.5px solid var(--border); border-radius:10px; font-family:'Tajawal',sans-serif; font-size:14px; outline:none; width:100%;">
+            </div>
+            <div class="form-group">
+              <label>الخطة</label>
+              <select id="act-plan" style="padding:11px 14px; border:1.5px solid var(--border); border-radius:10px; font-family:'Tajawal',sans-serif; font-size:14px; outline:none; width:100%;">
+                <option value="basic">عيادة أساسية — 30,000</option>
+                <option value="medium">مجمع صغير — 100,000</option>
+                <option value="large">مجمع كبير — 250,000</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>المدة</label>
+              <select id="act-months" style="padding:11px 14px; border:1.5px solid var(--border); border-radius:10px; font-family:'Tajawal',sans-serif; font-size:14px; outline:none; width:100%;">
+                <option value="1">شهر واحد</option>
+                <option value="3">3 أشهر</option>
+                <option value="6">6 أشهر</option>
+                <option value="12">سنة كاملة</option>
+              </select>
+            </div>
+            <button class="btn btn-primary btn-sm" style="margin-bottom:0;height:44px;" onclick="adminActivate()">تفعيل</button>
+          </div>
+          <div id="act-alert" class="alert" style="margin-top:12px; margin-bottom:0;"></div>
+        </div>
+      </div>
+
+      <!-- قائمة العيادات -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">🏥 العيادات المسجلة</div>
+          <input type="text" class="search-bar" placeholder="بحث برقم الهاتف أو الاسم..." oninput="filterClinics(this.value)">
+        </div>
+        <div class="card-body" style="padding:0;">
+          <div class="table-wrap">
+            <table id="clinics-table">
+              <thead>
+                <tr>
+                  <th>العيادة</th>
+                  <th>الهاتف</th>
+                  <th>الخطة</th>
+                  <th>الحالة</th>
+                  <th>تاريخ الانتهاء</th>
+                  <th>إجراء</th>
+                </tr>
+              </thead>
+              <tbody id="clinics-tbody">
+                <tr><td colspan="6" style="text-align:center; color:var(--text-muted); padding:30px;">جاري التحميل...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== بانر تحذير انتهاء الاشتراك (يظهر في التطبيق الرئيسي) ===== -->
+<div class="sub-warning-banner" id="sub-warning-banner">
+  ⚠️ <span id="sub-warning-text"></span>
+  <button class="btn btn-sm btn-whatsapp" style="margin-right:auto;" onclick="renewWhatsapp()">تجديد الآن</button>
+</div>
+
+<script>
+// ===== الإعدادات =====
+const SUPABASE_URL = 'https://aloozrrswipwtzmghrku.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_-81NXYyjUAqRSnmiTA_IGA_T5fHPe92';
+const TWILIO_ACCOUNT_SID = 'ACde469658584ad89d4b6dfce4302c8407';
+const TWILIO_AUTH_TOKEN = '1609602e138098edb207e892d3a6bbfc';
+const TWILIO_VERIFY_SID = 'VA23ceb5c8a3b2213132cdf1f6572af046';
+const WHATSAPP_NUMBER = '9647711149039';
+const ADMIN_PHONE = '07711149039';
+const ADMIN_PASSWORD = '12312300';
+const ADMIN_NAME = 'عبدالله';
+
+// ===== حالة التطبيق =====
+let currentUser = null;
+let selectedPlan = 'trial';
+let allClinics = [];
+let otpTimerInterval = null;
+
+// ===== Supabase Helper =====
+async function sbFetch(path, method = 'GET', body = null, extra = {}) {
+  const headers = {
+    'apikey': SUPABASE_KEY,
+    'Authorization': `Bearer ${SUPABASE_KEY}`,
+    'Content-Type': 'application/json',
+    'Prefer': 'return=representation',
+    ...extra
+  };
+  const opts = { method, headers };
+  if (body) opts.body = JSON.stringify(body);
+  const res = await fetch(SUPABASE_URL + '/rest/v1/' + path, opts);
+  const text = await res.text();
+  try { return { ok: res.ok, data: text ? JSON.parse(text) : null, status: res.status }; }
+  catch { return { ok: false, data: text, status: res.status }; }
+}
+
+// ===== إنشاء جداول إذا غير موجودة =====
+async function ensureTables() {
+  // نتحقق من وجود جدول clinics_auth
+  await sbFetch('clinics_auth?limit=1');
+}
+
+// ===== مساعدات الواجهة =====
+function showLoading(text = 'جاري التحميل...') {
+  document.getElementById('loading-text').textContent = text;
+  document.getElementById('loading-overlay').classList.remove('hidden');
+}
+function hideLoading() {
+  document.getElementById('loading-overlay').classList.add('hidden');
+}
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+function showAlert(msg, type = 'error', elId = 'auth-alert') {
+  const el = document.getElementById(elId);
+  el.className = `alert alert-${type}`;
+  el.textContent = msg;
+  el.style.display = 'block';
+  setTimeout(() => { el.style.display = 'none'; }, 5000);
+}
+
+// ===== التبويبات =====
+function switchAuthTab(tab) {
+  document.querySelectorAll('.auth-tab').forEach((t,i) => t.classList.toggle('active', (i===0 && tab==='login') || (i===1 && tab==='register')));
+  document.getElementById('login-form').style.display = tab === 'login' ? 'block' : 'none';
+  document.getElementById('register-form').style.display = tab === 'register' ? 'block' : 'none';
+  document.getElementById('auth-alert').style.display = 'none';
+  if (tab === 'register') goRegStep(1);
+}
+
+// ===== خطوات التسجيل =====
+function goRegStep(n) {
+  document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+  document.getElementById(`reg-step-${n}`)?.classList.add('active');
+}
+
+// ===== إرسال OTP =====
+async function sendOTP() {
+  const clinicName = document.getElementById('reg-clinic-name').value.trim();
+  const phone = document.getElementById('reg-phone').value.trim();
+  const email = document.getElementById('reg-email').value.trim();
+  const password = document.getElementById('reg-password').value;
+
+  if (!clinicName) return showAlert('أدخل اسم العيادة');
+  if (!phone || phone.length < 10) return showAlert('أدخل رقم هاتف صحيح');
+  if (!email || !email.includes('@')) return showAlert('أدخل بريد إلكتروني صحيح');
+  if (!password || password.length < 8) return showAlert('كلمة المرور يجب أن تكون 8 أحرف على الأقل');
+
+  const fullPhone = '+964' + phone.replace(/^0/, '');
+
+  // تحقق إذا الرقم مسجل مسبقاً
+  showLoading('التحقق من الرقم...');
+  const check = await sbFetch(`clinics_auth?phone=eq.${encodeURIComponent(fullPhone)}&select=id`);
+  hideLoading();
+
+  if (check.ok && check.data && check.data.length > 0) {
+    return showAlert('هذا الرقم مسجل مسبقاً. يرجى تسجيل الدخول.');
+  }
+
+  // إرسال OTP عبر Twilio Verify
+  showLoading('إرسال رمز التحقق...');
+  try {
+    const twilioRes = await fetch(
+      `https://verify.twilio.com/v2/Services/${TWILIO_VERIFY_SID}/Verifications`,
+      {
+        method: 'POST',
+        headers: {
+          'Authorization': 'Basic ' + btoa(`${TWILIO_ACCOUNT_SID}:${TWILIO_AUTH_TOKEN}`),
+          'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        body: new URLSearchParams({ To: fullPhone, Channel: 'sms' })
+      }
+    );
+    hideLoading();
+    if (twilioRes.ok) {
+      document.getElementById('otp-phone-display').textContent = fullPhone;
+      goRegStep(2);
+      startOTPTimer();
+    } else {
+      const err = await twilioRes.json();
+      showAlert('فشل إرسال الرمز: ' + (err.message || 'حاول مرة أخرى'));
+    }
+  } catch(e) {
+    hideLoading();
+    showAlert('تعذر الاتصال بخدمة الرسائل. تحقق من الاتصال.');
+  }
+}
+
+function startOTPTimer(seconds = 60) {
+  clearInterval(otpTimerInterval);
+  document.getElementById('resend-btn').disabled = true;
+  let s = seconds;
+  document.getElementById('otp-timer').textContent = `يمكنك إعادة الإرسال بعد ${s} ثانية`;
+  otpTimerInterval = setInterval(() => {
+    s--;
+    if (s <= 0) {
+      clearInterval(otpTimerInterval);
+      document.getElementById('resend-btn').disabled = false;
+      document.getElementById('otp-timer').textContent = '';
+    } else {
+      document.getElementById('otp-timer').textContent = `يمكنك إعادة الإرسال بعد ${s} ثانية`;
+    }
+  }, 1000);
+}
+
+async function resendOTP() {
+  await sendOTP();
+}
+
+function otpNext(el, prevId, nextId) {
+  if (el.value && nextId) document.getElementById(nextId)?.focus();
+  if (!el.value && prevId) document.getElementById(prevId)?.focus();
+}
+
+// ===== التحقق من OTP =====
+async function verifyOTP() {
+  const code = ['otp-1','otp-2','otp-3','otp-4','otp-5','otp-6'].map(id => document.getElementById(id).value).join('');
+  if (code.length < 6) return showAlert('أدخل الرمز كاملاً (6 أرقام)');
+
+  const phone = document.getElementById('reg-phone').value.trim();
+  const fullPhone = '+964' + phone.replace(/^0/, '');
+
+  showLoading('التحقق من الرمز...');
+  try {
+    const res = await fetch(
+      `https://verify.twilio.com/v2/Services/${TWILIO_VERIFY_SID}/VerificationCheck`,
+      {
+        method: 'POST',
+        headers: {
+          'Authorization': 'Basic ' + btoa(`${TWILIO_ACCOUNT_SID}:${TWILIO_AUTH_TOKEN}`),
+          'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        body: new URLSearchParams({ To: fullPhone, Code: code })
+      }
+    );
+    hideLoading();
+    const data = await res.json();
+    if (data.status === 'approved') {
+      goRegStep(3);
+    } else {
+      showAlert('الرمز غير صحيح أو انتهت صلاحيته');
+    }
+  } catch(e) {
+    hideLoading();
+    showAlert('خطأ في التحقق، حاول مرة أخرى');
+  }
+}
+
+// ===== اختيار الخطة =====
+function selectPlan(plan) {
+  selectedPlan = plan;
+  document.querySelectorAll('.plan-card').forEach(c => c.classList.remove('selected'));
+  document.getElementById(`plan-${plan}`)?.classList.add('selected');
+  const btn = document.getElementById('plan-submit-btn');
+  btn.textContent = plan === 'trial' ? 'ابدأ مجاناً ←' : 'المتابعة للدفع ←';
+}
+
+async function completePlanSelection() {
+  if (selectedPlan === 'trial') {
+    await createAccount('trial');
+  } else {
+    // عرض شاشة الدفع
+    const planNames = { basic: 'عيادة أساسية — 30,000 دينار/شهر', medium: 'مجمع صغير — 100,000 دينار/شهر', large: 'مجمع كبير — 250,000 دينار/شهر' };
+    document.getElementById('pay-plan-summary').textContent = planNames[selectedPlan];
+    goRegStep(4);
+  }
+}
+
+function payWhatsapp(method) {
+  const planNames = { basic: 'عيادة أساسية 30,000 دينار', medium: 'مجمع صغير 100,000 دينار', large: 'مجمع كبير 250,000 دينار' };
+  const methodName = method === 'zain' ? 'زين كاش' : 'ماستر كارد/سوبر كي';
+  const phone = document.getElementById('reg-phone').value.trim();
+  const clinicName = document.getElementById('reg-clinic-name').value.trim();
+  const msg = `مرحباً، أريد الاشتراك في نظام إدارة العيادات\n\nالخطة: ${planNames[selectedPlan]}\nطريقة الدفع: ${methodName}\nاسم العيادة: ${clinicName}\nرقم الهاتف: ${phone}`;
+  window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`, '_blank');
+  // إنشاء الحساب بحالة انتظار
+  createAccount('pending');
+}
+
+// ===== إنشاء الحساب =====
+async function createAccount(status) {
+  const clinicName = document.getElementById('reg-clinic-name').value.trim();
+  const phone = document.getElementById('reg-phone').value.trim();
+  const email = document.getElementById('reg-email').value.trim();
+  const password = document.getElementById('reg-password').value;
+  const fullPhone = '+964' + phone.replace(/^0/, '');
+
+  const now = new Date();
+  let expiresAt = null;
+  if (status === 'trial') {
+    expiresAt = new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000).toISOString();
+  }
+
+  showLoading('إنشاء الحساب...');
+
+  // Hash كلمة المرور (بسيط لأغراض العرض — في الإنتاج استخدم bcrypt أو Supabase Auth)
+  const passHash = btoa(password + fullPhone);
+
+  const record = {
+    clinic_name: clinicName,
+    phone: fullPhone,
+    email,
+    password_hash: passHash,
+    plan: selectedPlan === 'trial' ? 'trial' : selectedPlan,
+    status: status, // trial, pending, active, expired
+    created_at: now.toISOString(),
+    expires_at: expiresAt,
+    trial_used: true
+  };
+
+  const res = await sbFetch('clinics_auth', 'POST', record);
+  hideLoading();
+
+  if (res.ok) {
+    currentUser = res.data?.[0] || record;
+    localStorage.setItem('clinic_user', JSON.stringify(currentUser));
+    if (status === 'trial') {
+      showAlert('تم إنشاء حسابك! تمتع بـ 14 يوم مجاناً 🎉', 'success');
+      setTimeout(() => redirectAfterLogin(), 1500);
+    } else {
+      showAlert('تم إنشاء حسابك! سيتم تفعيله بعد تأكيد الدفع ✅', 'success');
+    }
+  } else {
+    showAlert('خطأ في إنشاء الحساب: ' + (res.data?.message || JSON.stringify(res.data)));
+  }
+}
+
+// ===== تسجيل الدخول =====
+async function doLogin() {
+  const phone = document.getElementById('login-phone').value.trim();
+  const password = document.getElementById('login-password').value;
+
+  if (!phone) return showAlert('أدخل رقم الهاتف');
+  if (!password) return showAlert('أدخل كلمة المرور');
+
+  // فحص المدير
+  if (phone === ADMIN_PHONE && password === ADMIN_PASSWORD) {
+    currentUser = { is_admin: true, clinic_name: 'المدير', phone: ADMIN_PHONE };
+    localStorage.setItem('clinic_user', JSON.stringify(currentUser));
+    showScreen('admin-screen');
+    loadAdminData();
+    return;
+  }
+
+  const fullPhone = '+964' + phone.replace(/^0/, '');
+  const passHash = btoa(password + fullPhone);
+
+  showLoading('تسجيل الدخول...');
+  const res = await sbFetch(`clinics_auth?phone=eq.${encodeURIComponent(fullPhone)}&select=*`);
+  hideLoading();
+
+  if (!res.ok || !res.data || res.data.length === 0) {
+    return showAlert('رقم الهاتف غير مسجل');
+  }
+
+  const user = res.data[0];
+  if (user.password_hash !== passHash) {
+    return showAlert('كلمة المرور غير صحيحة');
+  }
+
+  currentUser = user;
+  localStorage.setItem('clinic_user', JSON.stringify(currentUser));
+
+  // حذف بيانات التجريبي المنتهي
+  if (user.plan === 'trial' && user.expires_at) {
+    const expired = new Date(user.expires_at) < new Date();
+    if (expired) {
+      await deleteTrialData(user.id);
+      showExpiredScreen(true);
+      return;
+    }
+  }
+
+  redirectAfterLogin();
+}
+
+async function deleteTrialData(userId) {
+  showLoading('حذف البيانات التجريبية...');
+  // حذف بيانات العيادة من جميع الجداول
+  await sbFetch(`appointments?clinic_id=eq.${userId}`, 'DELETE');
+  await sbFetch(`patients?clinic_id=eq.${userId}`, 'DELETE');
+  await sbFetch(`invoices?clinic_id=eq.${userId}`, 'DELETE');
+  await sbFetch(`medications?clinic_id=eq.${userId}`, 'DELETE');
+  // تحديث حالة الحساب
+  await sbFetch(`clinics_auth?id=eq.${userId}`, 'PATCH', { status: 'expired', plan: 'expired' });
+  hideLoading();
+}
+
+function showExpiredScreen(isTrialDeleted = false) {
+  if (isTrialDeleted) {
+    document.getElementById('exp-icon').textContent = '🗑️';
+    document.getElementById('exp-title').textContent = 'انتهت الفترة التجريبية';
+    document.getElementById('exp-sub').textContent = 'تم حذف جميع بياناتك التجريبية تلقائياً. للاستمرار في استخدام النظام، يرجى الاشتراك بإحدى الخطط المدفوعة.';
+    document.getElementById('exp-days').style.display = 'none';
+  } else {
+    const user = currentUser;
+    const expiresAt = user?.expires_at ? new Date(user.expires_at) : null;
+    const now = new Date();
+    if (expiresAt && expiresAt > now) {
+      const daysLeft = Math.ceil((expiresAt - now) / (1000 * 60 * 60 * 24));
+      document.getElementById('exp-icon').textContent = '⚠️';
+      document.getElementById('exp-title').textContent = 'اشتراكك على وشك الانتهاء!';
+      document.getElementById('exp-sub').textContent = 'يرجى تجديد اشتراكك قبل انتهاء المهلة لتجنب إيقاف الخدمة.';
+      document.getElementById('exp-days').textContent = `⏳ متبقي ${daysLeft} يوم على انتهاء المهلة الإضافية (7 أيام)`;
+      document.getElementById('exp-days').style.display = 'block';
+    } else {
+      document.getElementById('exp-icon').textContent = '🔒';
+      document.getElementById('exp-title').textContent = 'تم إيقاف الخدمة';
+      document.getElementById('exp-sub').textContent = 'انتهت مهلة التجديد (7 أيام). تم إيقاف جميع المميزات. يرجى تجديد اشتراكك للاستمرار.';
+      document.getElementById('exp-days').style.display = 'none';
+    }
+  }
+  showScreen('expired-screen');
+}
+
+function renewWhatsapp() {
+  const user = currentUser || {};
+  const msg = `مرحباً، أريد تجديد اشتراكي في نظام إدارة العيادات\n\nاسم العيادة: ${user.clinic_name || ''}\nرقم الهاتف: ${user.phone || ''}`;
+  window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`, '_blank');
+}
+
+// ===== التوجيه بعد الدخول =====
+function redirectAfterLogin() {
+  const user = currentUser;
+  if (!user) return;
+
+  // فحص حالة الاشتراك للمشتركين المدفوعين
+  if (user.plan !== 'trial' && user.expires_at) {
+    const expiresAt = new Date(user.expires_at);
+    const now = new Date();
+    const daysLeft = Math.ceil((expiresAt - now) / (1000 * 60 * 60 * 24));
+
+    if (daysLeft <= 0) {
+      // إيقاف الخدمة نهائياً بعد 7 أيام من الانتهاء
+      const gracePeriodEnd = new Date(expiresAt.getTime() + 7 * 24 * 60 * 60 * 1000);
+      if (now > gracePeriodEnd) {
+        showExpiredScreen(false);
+        return;
+      }
+    }
+
+    if (daysLeft <= 7 && daysLeft > 0) {
+      // إظهار تحذير
+      const banner = document.getElementById('sub-warning-banner');
+      document.getElementById('sub-warning-text').textContent = `⚠️ اشتراكك ينتهي خلال ${daysLeft} يوم! يرجى التجديد لتجنب إيقاف الخدمة.`;
+      banner.classList.add('show');
+    }
+  }
+
+  // توجيه للتطبيق الرئيسي
+  window.location.href = 'index.html';
+}
+
+// ===== تسجيل الخروج =====
+function doLogout() {
+  currentUser = null;
+  localStorage.removeItem('clinic_user');
+  showScreen('auth-screen');
+  switchAuthTab('login');
+}
+
+// ===== لوحة المدير =====
+async function loadAdminData() {
+  showLoading('تحميل البيانات...');
+  const res = await sbFetch('clinics_auth?select=*&order=created_at.desc');
+  hideLoading();
+
+  if (!res.ok || !res.data) return;
+  allClinics = res.data;
+  renderClinicsTable(allClinics);
+
+  document.getElementById('stat-total').textContent = allClinics.length;
+  document.getElementById('stat-active').textContent = allClinics.filter(c => c.status === 'active').length;
+  document.getElementById('stat-trial').textContent = allClinics.filter(c => c.plan === 'trial').length;
+}
+
+function renderClinicsTable(clinics) {
+  const tbody = document.getElementById('clinics-tbody');
+  if (!clinics.length) {
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:30px;">لا توجد عيادات مسجلة بعد</td></tr>';
+    return;
+  }
+
+  const planNames = { trial: 'تجريبي', basic: 'أساسية', medium: 'مجمع صغير', large: 'مجمع كبير', pending: 'انتظار دفع', expired: 'منتهي' };
+  const statusBadge = {
+    trial: '<span class="badge badge-amber">تجريبي</span>',
+    active: '<span class="badge badge-green">نشط</span>',
+    pending: '<span class="badge badge-blue">انتظار</span>',
+    expired: '<span class="badge badge-red">منتهي</span>'
+  };
+
+  tbody.innerHTML = clinics.map(c => {
+    const exp = c.expires_at ? new Date(c.expires_at).toLocaleDateString('ar-IQ') : '—';
+    return `<tr>
+      <td><strong>${escHtml(c.clinic_name)}</strong><br><span style="font-size:11px;color:var(--text-muted)">${escHtml(c.email||'')}</span></td>
+      <td>${escHtml(c.phone)}</td>
+      <td>${planNames[c.plan] || c.plan}</td>
+      <td>${statusBadge[c.status] || c.status}</td>
+      <td>${exp}</td>
+      <td>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;">
+          ${c.status !== 'active' ? `<button class="action-btn btn-activate" onclick="quickActivate('${c.id}')">تفعيل</button>` : ''}
+          ${c.status === 'active' ? `<button class="action-btn btn-deactivate" onclick="quickDeactivate('${c.id}')">إيقاف</button>` : ''}
+          <button class="action-btn btn-delete" onclick="deleteClinic('${c.id}','${escHtml(c.clinic_name)}')">حذف</button>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function filterClinics(q) {
+  const filtered = allClinics.filter(c =>
+    c.clinic_name?.includes(q) || c.phone?.includes(q) || c.email?.includes(q)
+  );
+  renderClinicsTable(filtered);
+}
+
+async function adminActivate() {
+  const phone = document.getElementById('act-phone').value.trim();
+  const plan = document.getElementById('act-plan').value;
+  const months = parseInt(document.getElementById('act-months').value);
+
+  if (!phone) return showAlert('أدخل رقم الهاتف', 'error', 'act-alert');
+
+  const fullPhone = phone.startsWith('+') ? phone : '+964' + phone.replace(/^0/, '');
+  const expiresAt = new Date(Date.now() + months * 30 * 24 * 60 * 60 * 1000).toISOString();
+
+  showLoading('تفعيل الاشتراك...');
+  const res = await sbFetch(`clinics_auth?phone=eq.${encodeURIComponent(fullPhone)}`, 'PATCH', {
+    status: 'active', plan, expires_at: expiresAt
+  });
+  hideLoading();
+
+  if (res.ok) {
+    showAlert(`✅ تم تفعيل الاشتراك لـ ${fullPhone} حتى ${new Date(expiresAt).toLocaleDateString('ar-IQ')}`, 'success', 'act-alert');
+    loadAdminData();
+  } else {
+    showAlert('فشل التفعيل: ' + JSON.stringify(res.data), 'error', 'act-alert');
+  }
+}
+
+async function quickActivate(id) {
+  const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
+  showLoading('تفعيل...');
+  await sbFetch(`clinics_auth?id=eq.${id}`, 'PATCH', { status: 'active', expires_at: expiresAt });
+  hideLoading();
+  loadAdminData();
+}
+
+async function quickDeactivate(id) {
+  if (!confirm('هل تريد إيقاف هذا الاشتراك؟')) return;
+  showLoading('إيقاف...');
+  await sbFetch(`clinics_auth?id=eq.${id}`, 'PATCH', { status: 'expired' });
+  hideLoading();
+  loadAdminData();
+}
+
+async function deleteClinic(id, name) {
+  if (!confirm(`⚠️ هل تريد حذف عيادة "${name}" وجميع بياناتها نهائياً؟`)) return;
+  showLoading('حذف...');
+  await sbFetch(`clinics_auth?id=eq.${id}`, 'DELETE');
+  hideLoading();
+  loadAdminData();
+}
+
+function escHtml(str) {
+  return String(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ===== التشغيل عند الفتح =====
+async function init() {
+  showLoading('جاري التحميل...');
+
+  // فحص إذا في مستخدم مسجل
+  const saved = localStorage.getItem('clinic_user');
+  if (saved) {
+    try {
+      currentUser = JSON.parse(saved);
+      if (currentUser.is_admin) {
+        hideLoading();
+        showScreen('admin-screen');
+        loadAdminData();
+        return;
+      }
+      // تحديث بيانات المستخدم من القاعدة
+      if (currentUser.phone) {
+        const res = await sbFetch(`clinics_auth?phone=eq.${encodeURIComponent(currentUser.phone)}&select=*`);
+        if (res.ok && res.data?.length > 0) {
+          currentUser = res.data[0];
+          localStorage.setItem('clinic_user', JSON.stringify(currentUser));
+        }
+      }
+      hideLoading();
+      redirectAfterLogin();
+      return;
+    } catch(e) {}
+  }
+
+  hideLoading();
+  showScreen('auth-screen');
+}
+
+// تشغيل تلقائي لحذف بيانات التجريبيين المنتهين (كل مرة يفتح المدير اللوحة)
+async function cleanupExpiredTrials() {
+  const now = new Date().toISOString();
+  const res = await sbFetch(`clinics_auth?plan=eq.trial&expires_at=lt.${now}&status=neq.expired&select=id`);
+  if (res.ok && res.data?.length > 0) {
+    for (const u of res.data) {
+      await deleteTrialData(u.id);
+    }
+  }
+}
+
+init();
+</script>
+</body>
+</html>
