@@ -2450,7 +2450,7 @@ document.addEventListener('click', function(e) {
   }
 })();
 
-async function loadNotifications() {
+(function q(){const s=localStorage.getItem('clinic_user');if(!s){window.location.replace('auth-system.html');}})();async function loadNotifications() {
   try {
     const today = getLocalDate();
     const { data: todayAppts } = await db.from('appointments').select('*').eq('date', today).eq('status', 'مؤكد');
