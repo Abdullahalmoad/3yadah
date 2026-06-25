@@ -1,0 +1,1366 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Doctor Plus — دكتور بلس | نظام إدارة العيادات الطبية</title>
+
+<!-- PWA Meta Tags -->
+<link rel="manifest" href="manifest.json">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="دكتور بلس">
+<meta name="theme-color" content="#2563eb">
+<meta name="msapplication-TileColor" content="#2563eb">
+<meta name="msapplication-TileImage" content="icons/icon-144x144.png">
+
+<!-- PWA Icons -->
+<link rel="icon" type="image/png" sizes="32x32" href="icons/icon-96x96.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192x192.png">
+<link rel="apple-touch-icon" href="icons/icon-152x152.png">
+<link rel="apple-touch-icon" sizes="152x152" href="icons/icon-152x152.png">
+<link rel="apple-touch-icon" sizes="192x192" href="icons/icon-192x192.png">
+<link rel="apple-touch-icon" sizes="512x512" href="icons/icon-512x512.png">
+
+<!-- Apple Splash Screens -->
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="description" content="Doctor Plus | دكتور بلس: نظام متكامل لإدارة العيادات والمجمعات الطبية في العراق. حجوزات، ملفات مرضى، وصفات طبية، صيدلية، فواتير، وتذكيرات واتساب.">
+<meta name="keywords" content="دكتور بلس, Doctor Plus, نظام إدارة عيادات, برنامج عيادة, نظام مجمع طبي, إدارة مرضى, نظام طبي العراق">
+<meta name="author" content="عبدالله الموعد">
+<link rel="canonical" href="https://abdullahalmoad.github.io/3yadah/auth-system.html">
+<meta property="og:title" content="Doctor Plus — دكتور بلس | نظام إدارة العيادات الطبية">
+<meta property="og:description" content="Doctor Plus | دكتور بلس: نظام متكامل لإدارة العيادات والمجمعات الطبية في العراق.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://abdullahalmoad.github.io/3yadah/auth-system.html">
+<meta property="og:locale" content="ar_IQ">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800&display=swap');
+:root{--primary:#2563eb;--primary-light:#3b82f6;--primary-pale:#eff6ff;--accent:#f59e0b;--danger:#ef4444;--danger-light:#fef2f2;--text:#0f172a;--text-muted:#64748b;--border:#e2e8f0;--bg:#f8fafc;}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{width:100%;overflow-x:hidden;}
+body{font-family:'Tajawal',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:15px;width:100%;overflow-x:hidden;}
+
+.screen{display:none;min-height:100vh;}
+.screen.active{display:flex;}
+
+/* خلفية */
+.auth-bg{flex:1;background:linear-gradient(135deg,#0f2158 0%,#1d4ed8 55%,#3b82f6 100%);display:flex;align-items:center;justify-content:center;padding:20px;position:relative;overflow:hidden;}
+.auth-bg::before{content:'';position:absolute;inset:0;background:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");}
+
+/* البطاقة */
+.auth-card{background:#fff;border-radius:24px;padding:36px 32px;width:480px;max-width:100%;box-shadow:0 30px 80px rgba(0,0,0,.25);position:relative;z-index:1;max-height:95vh;overflow-y:auto;}
+.auth-logo{text-align:center;margin-bottom:24px;}
+.auth-logo-icon{width:64px;height:64px;border-radius:18px;background:linear-gradient(135deg,#1d4ed8,#2563eb);display:inline-flex;align-items:center;justify-content:center;font-size:28px;margin-bottom:12px;box-shadow:0 8px 24px rgba(37,99,235,0.3);}
+.auth-logo-brand{display:flex;flex-direction:column;align-items:center;gap:2px;}
+.auth-logo-en{font-size:22px;font-weight:900;color:var(--primary);letter-spacing:0.5px;line-height:1;}
+.auth-logo-en span{color:var(--accent);}
+.auth-logo-ar{font-size:13px;font-weight:700;color:var(--text-muted);letter-spacing:1px;direction:rtl;}
+.auth-logo-divider{width:36px;height:2px;background:linear-gradient(90deg,var(--primary),var(--accent));border-radius:2px;margin:6px auto;}
+.auth-logo p{font-size:11px;color:var(--text-muted);margin-top:4px;}
+
+.auth-tabs{display:flex;background:var(--bg);border-radius:12px;padding:4px;margin-bottom:20px;}
+.auth-tab{flex:1;padding:9px;border:none;background:none;border-radius:9px;font-family:'Tajawal',sans-serif;font-size:14px;font-weight:600;color:var(--text-muted);cursor:pointer;transition:all .18s;}
+.auth-tab.active{background:#fff;color:var(--primary);box-shadow:0 2px 8px rgba(0,0,0,.08);}
+
+.form-group{margin-bottom:14px;}
+label{font-size:13px;font-weight:600;color:var(--text);display:block;margin-bottom:5px;}
+.input-wrap{position:relative;}
+.input-icon{position:absolute;right:13px;top:50%;transform:translateY(-50%);font-size:15px;}
+input[type=text],input[type=tel],input[type=email],input[type=password],select{width:100%;padding:11px 38px 11px 13px;border:1.5px solid var(--border);border-radius:10px;font-family:'Tajawal',sans-serif;font-size:14px;color:var(--text);transition:border-color .18s;outline:none;background:#fff;}
+input:focus,select:focus{border-color:var(--primary);}
+
+/* خطوات */
+.step{display:none;}
+.step.active{display:block;}
+
+/* خطط */
+.plans-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0;}
+.plan-card{border:2px solid var(--border);border-radius:12px;padding:12px;cursor:pointer;transition:all .18s;position:relative;}
+.plan-card:hover{border-color:var(--primary);background:var(--primary-pale);}
+.plan-card.selected{border-color:var(--primary);background:var(--primary-pale);}
+.plan-badge{position:absolute;top:-9px;right:12px;background:var(--accent);color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;}
+.plan-badge.green{background:var(--primary);}
+.plan-name{font-size:13px;font-weight:800;}
+.plan-price{font-size:15px;font-weight:800;color:var(--primary);margin:3px 0;}
+.plan-price span{font-size:11px;font-weight:500;color:var(--text-muted);}
+.plan-features{font-size:11px;color:var(--text-muted);line-height:1.6;}
+
+/* أدوار */
+.roles-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0;}
+.role-card{border:2px solid var(--border);border-radius:12px;padding:14px;cursor:pointer;transition:all .18s;text-align:center;}
+.role-card:hover{border-color:var(--primary);background:var(--primary-pale);}
+.role-card.selected{border-color:var(--primary);background:var(--primary-pale);}
+.role-icon{font-size:28px;margin-bottom:6px;}
+.role-name{font-size:13px;font-weight:700;}
+.role-desc{font-size:11px;color:var(--text-muted);margin-top:3px;}
+
+/* OTP */
+.otp-row{display:flex;gap:8px;justify-content:center;margin:10px 0;}
+.otp-input{width:46px;height:52px;text-align:center;font-size:20px;font-weight:700;border:2px solid var(--border);border-radius:10px;font-family:'Tajawal',sans-serif;outline:none;transition:border-color .18s;}
+.otp-input:focus{border-color:var(--primary);}
+
+/* أزرار */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:12px 18px;border-radius:10px;font-family:'Tajawal',sans-serif;font-size:14px;font-weight:700;cursor:pointer;border:none;transition:all .18s;width:100%;}
+.btn-primary{background:var(--primary);color:#fff;}
+.btn-primary:hover{background:var(--primary-light);}
+.btn-outline{background:transparent;color:var(--primary);border:2px solid var(--primary);}
+.btn-outline:hover{background:var(--primary-pale);}
+.btn-whatsapp{background:#25d366;color:#fff;}
+.btn-sm{padding:7px 14px;font-size:13px;width:auto;}
+.btn+.btn{margin-top:8px;}
+
+.alert{padding:11px 14px;border-radius:10px;font-size:13px;font-weight:600;margin-bottom:14px;display:none;}
+.alert-error{background:var(--danger-light);color:var(--danger);border:1px solid #f5c6c6;}
+.alert-success{background:var(--primary-pale);color:var(--primary);border:1px solid #b2ddd4;}
+.alert-warning{background:#fff8e6;color:#b07800;border:1px solid #ffe299;}
+
+.resend-btn{background:none;border:none;color:var(--primary);font-family:'Tajawal',sans-serif;font-size:13px;font-weight:700;cursor:pointer;text-decoration:underline;}
+.resend-btn:disabled{opacity:.5;cursor:not-allowed;}
+.timer-text{font-size:12px;color:var(--text-muted);margin-top:5px;}
+.footer-text{text-align:center;font-size:12px;color:var(--text-muted);margin-top:14px;}
+
+/* انتهاء اشتراك */
+#expired-screen{background:linear-gradient(135deg,#0f2158,#1d4ed8);flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center;}
+.expired-card{background:#fff;border-radius:24px;padding:40px 32px;max-width:440px;width:100%;box-shadow:0 30px 80px rgba(0,0,0,.25);}
+.expired-icon{font-size:52px;margin-bottom:14px;}
+.expired-title{font-size:20px;font-weight:800;margin-bottom:8px;}
+.expired-sub{font-size:13px;color:var(--text-muted);margin-bottom:20px;line-height:1.7;}
+.days-left{background:#fff3cc;border:2px solid var(--accent);border-radius:10px;padding:12px;margin-bottom:16px;font-size:14px;font-weight:700;color:#b07800;}
+
+/* لوحة المدير */
+#admin-screen{flex-direction:column;background:var(--bg);}
+.admin-topbar{background:linear-gradient(135deg,#1d4ed8,#2563eb);padding:0 24px;height:58px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.admin-topbar h1{font-size:17px;font-weight:800;color:#fff;}
+.admin-content{padding:24px;flex:1;overflow-y:auto;}
+.admin-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:20px;}
+.admin-stat{background:#fff;border-radius:12px;padding:18px;border:1px solid var(--border);text-align:center;}
+.admin-stat-val{font-size:28px;font-weight:800;color:var(--primary);}
+.admin-stat-label{font-size:12px;color:var(--text-muted);margin-top:3px;}
+.card{background:#fff;border-radius:14px;border:1px solid var(--border);overflow:hidden;margin-bottom:18px;}
+.card-header{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.card-title{font-size:14px;font-weight:700;}
+.card-body{padding:18px;}
+table{width:100%;border-collapse:collapse;}
+th{text-align:right;font-size:11px;font-weight:700;color:var(--text-muted);padding:9px 14px;background:var(--bg);border-bottom:1px solid var(--border);}
+td{padding:11px 14px;border-bottom:1px solid var(--border);font-size:13px;vertical-align:middle;}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:var(--bg);}
+.badge{display:inline-flex;align-items:center;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:600;}
+.badge-green{background:var(--primary-pale);color:var(--primary);}
+.badge-amber{background:#fff3cc;color:#b07800;}
+.badge-red{background:var(--danger-light);color:var(--danger);}
+.badge-blue{background:#e8f0ff;color:#2a5bd7;}
+.badge-gray{background:#f0f0f0;color:#666;}
+.action-btn{padding:5px 12px;border-radius:7px;border:none;font-family:'Tajawal',sans-serif;font-size:12px;font-weight:700;cursor:pointer;transition:all .18s;}
+.btn-activate{background:var(--primary-pale);color:var(--primary);}
+.btn-activate:hover{background:var(--primary);color:#fff;}
+.btn-deactivate{background:var(--danger-light);color:var(--danger);}
+.btn-delete{background:#f0f0f0;color:#666;}
+.btn-delete:hover{background:var(--danger);color:#fff;}
+.search-bar{padding:9px 14px;border:1.5px solid var(--border);border-radius:9px;font-family:'Tajawal',sans-serif;font-size:13px;outline:none;width:240px;}
+.search-bar:focus{border-color:var(--primary);}
+.activate-form{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;}
+.activate-form .form-group{flex:1;min-width:150px;margin-bottom:0;}
+.activate-form select,.activate-form input{padding:10px 13px;border:1.5px solid var(--border);border-radius:9px;font-family:'Tajawal',sans-serif;font-size:13px;outline:none;width:100%;}
+
+/* تحميل */
+.loading-overlay{position:fixed;inset:0;background:rgba(37,99,235,.92);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;color:#fff;}
+.loading-overlay.hidden{display:none;}
+.spinner{width:44px;height:44px;border:4px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .8s linear infinite;margin-bottom:14px;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+/* بانر تحذير */
+.sub-warning-banner{display:none;align-items:center;gap:10px;background:#fff3cc;border-bottom:2px solid var(--accent);padding:11px 18px;font-size:13px;font-weight:700;color:#b07800;position:sticky;top:0;z-index:999;}
+.sub-warning-banner.show{display:flex;}
+
+/* تبويبات الإدارة */
+.admin-tabs{display:flex;gap:6px;margin-bottom:18px;flex-wrap:wrap;}
+.admin-tab-btn{padding:8px 16px;border-radius:9px;border:1.5px solid var(--border);background:#fff;font-family:'Tajawal',sans-serif;font-size:13px;font-weight:600;cursor:pointer;color:var(--text-muted);transition:all .18s;}
+.admin-tab-btn.active{background:var(--primary);color:#fff;border-color:var(--primary);}
+.admin-tab-content{display:none;}
+.admin-tab-content.active{display:block;}
+
+/* نموذج إضافة موظف */
+.employee-form{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.employee-form .form-group{margin-bottom:0;}
+.employee-form input,.employee-form select{padding:10px 13px;border:1.5px solid var(--border);border-radius:9px;font-family:'Tajawal',sans-serif;font-size:13px;outline:none;width:100%;}
+.employee-form input:focus,.employee-form select:focus{border-color:var(--primary);}
+
+/* ===== سطح المكتب: عمودان جنب بعض ===== */
+#auth-screen{display:flex;flex-direction:row;}
+.auth-bg-side{display:flex;}
+.auth-form-side{width:480px;min-height:100vh;background:#fff;display:flex;align-items:center;justify-content:center;padding:20px;overflow-y:auto;}
+
+/* ===== موبايل: عمود واحد — نخفي الخلفية الزرقاء ===== */
+@media(max-width:768px){
+  #auth-screen{flex-direction:column;}
+  .auth-bg-side{display:none!important;}
+  .auth-form-side{
+    width:100%!important;
+    min-height:100vh;
+    padding:24px 16px;
+    background:linear-gradient(150deg,#0f2158 0%,#1d4ed8 55%,#3b82f6 100%);
+    align-items:flex-start;
+    padding-top:48px;
+  }
+  .auth-card{
+    width:100%!important;
+    max-width:100%!important;
+    border-radius:20px!important;
+    padding:28px 20px!important;
+    box-shadow:0 20px 60px rgba(0,0,0,.25)!important;
+  }
+  .plans-grid{grid-template-columns:1fr;}
+  .roles-grid{grid-template-columns:1fr 1fr;}
+  .admin-grid{grid-template-columns:1fr 1fr;}
+  .employee-form{grid-template-columns:1fr;}
+  .search-bar{width:100%;}
+  table{font-size:12px;}
+  td,th{padding:8px 10px;}
+}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+</head>
+<body>
+
+<div class="loading-overlay hidden" id="loading-overlay">
+  <div class="spinner"></div>
+  <div id="loading-text">جاري التحميل...</div>
+</div>
+
+<!-- ===== شاشة التسجيل / الدخول ===== -->
+<div class="screen active" id="auth-screen">
+
+  <!-- يسار: خلفية زرقاء مع معلومات (تُخفى على الموبايل) -->
+  <div class="auth-bg-side auth-bg" style="flex:1;flex-direction:column;align-items:center;justify-content:center;padding:40px;min-height:100vh;">
+    <div style="max-width:420px;text-align:center;color:#fff;">
+      <div style="width:64px;height:64px;background:rgba(255,255,255,.15);border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:30px;margin:0 auto 20px;border:1px solid rgba(255,255,255,.2);">🏥</div>
+      <div style="font-size:32px;font-weight:900;letter-spacing:-.5px;margin-bottom:6px;">Doctor<span style="color:#fbbf24;">Plus</span></div>
+      <div style="font-size:14px;opacity:.6;margin-bottom:30px;letter-spacing:2px;">دكتور بلس</div>
+      <div style="font-size:18px;font-weight:700;margin-bottom:10px;line-height:1.4;">إدارة عيادتك<br>بسهولة واحترافية</div>
+      <div style="font-size:13px;opacity:.65;line-height:1.8;margin-bottom:36px;">نظام متكامل لإدارة المرضى، المواعيد،<br>الفواتير، والتقارير في مكان واحد</div>
+      <div style="display:flex;flex-direction:column;gap:10px;text-align:right;">
+        <div style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:14px 16px;display:flex;align-items:center;gap:12px;">
+          <div style="width:36px;height:36px;background:rgba(255,255,255,.15);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">👥</div>
+          <div><div style="font-weight:700;font-size:13px;">إدارة المرضى</div><div style="font-size:11px;opacity:.6;">ملفات طبية كاملة وآمنة</div></div>
+        </div>
+        <div style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:14px 16px;display:flex;align-items:center;gap:12px;">
+          <div style="width:36px;height:36px;background:rgba(255,255,255,.15);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">📅</div>
+          <div><div style="font-weight:700;font-size:13px;">المواعيد والتذكيرات</div><div style="font-size:11px;opacity:.6;">واتساب تلقائي للمرضى</div></div>
+        </div>
+        <div style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:14px 16px;display:flex;align-items:center;gap:12px;">
+          <div style="width:36px;height:36px;background:rgba(255,255,255,.15);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">💰</div>
+          <div><div style="font-weight:700;font-size:13px;">الفواتير والمحاسبة</div><div style="font-size:11px;opacity:.6;">تقارير مالية شاملة</div></div>
+        </div>
+      </div>
+      <div style="margin-top:32px;font-size:11px;opacity:.4;">★★★★★ يثق به أكثر من 500 عيادة في العراق</div>
+    </div>
+  </div>
+
+  <!-- يمين: بطاقة الدخول -->
+  <div class="auth-form-side">
+  <div class="auth-card" style="width:100%;max-width:420px;box-shadow:none;padding:32px 0;border-radius:0;">
+    <div class="auth-logo">
+      <div class="auth-logo-icon">🏥</div>
+      <div class="auth-logo-brand">
+        <div class="auth-logo-en">Doctor<span>Plus</span></div>
+        <div class="auth-logo-divider"></div>
+        <div class="auth-logo-ar">دكتور بلس</div>
+      </div>
+      <p>نظام إدارة العيادات والمجمعات الطبية</p>
+    </div>
+
+    <div class="auth-tabs">
+      <button class="auth-tab active" onclick="switchTab('login')">تسجيل الدخول</button>
+      <button class="auth-tab" onclick="switchTab('register')">حساب جديد</button>
+    </div>
+
+    <div id="auth-alert" class="alert"></div>
+
+    <!-- تسجيل الدخول -->
+    <div id="login-form">
+      <div class="form-group">
+        <label>رقم الهاتف أو البريد الإلكتروني</label>
+        <div class="input-wrap">
+          <span class="input-icon">👤</span>
+          <input type="text" id="login-identifier" placeholder="07XXXXXXXXX أو example@email.com">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>كلمة المرور</label>
+        <div class="input-wrap">
+          <span class="input-icon">🔒</span>
+          <input type="password" id="login-password" placeholder="••••••••">
+        </div>
+      </div>
+      <button class="btn btn-primary" onclick="doLogin()">دخول</button>
+    </div>
+
+    <!-- التسجيل -->
+    <div id="register-form" style="display:none">
+      <!-- بانر الباقة المختارة من الـ Landing Page -->
+      <div id="selected-plan-banner" style="display:none;background:linear-gradient(135deg,#0f2158,#1d4ed8);color:#fff;border-radius:10px;padding:10px 14px;font-size:13px;font-weight:700;text-align:center;margin-bottom:12px;"></div>
+
+      <!-- الخطوة 1: اختيار الباقة -->
+      <div class="step active" id="reg-step-1">
+        <p style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:10px;text-align:center;">اختر نوع اشتراكك أولاً</p>
+        <div class="plans-grid">
+          <div class="plan-card selected" id="plan-trial" onclick="selectPlan('trial')">
+            <div class="plan-badge">مجاني</div>
+            <div class="plan-name">🎁 تجريبي</div>
+            <div class="plan-price">0 <span>/ 14 يوم</span></div>
+            <div class="plan-features">دكتور+سكرتير+صيدلاني<br>⚠️ البيانات تُحذف تلقائياً</div>
+          </div>
+          <div class="plan-card" id="plan-basic" onclick="selectPlan('basic')">
+            <div class="plan-name">🏥 عيادة أساسية</div>
+            <div class="plan-price">30,000 <span>د.ع/شهر</span></div>
+            <div class="plan-features">دكتور+صيدلاني+سكرتير<br>✅ بيانات محفوظة دائماً</div>
+          </div>
+          <div class="plan-card" id="plan-medium" onclick="selectPlan('medium')">
+            <div class="plan-badge green">الأكثر طلباً</div>
+            <div class="plan-name">🏨 مجمع صغير</div>
+            <div class="plan-price">100,000 <span>د.ع/شهر</span></div>
+            <div class="plan-features">5 أطباء+صيدلاني<br>1-5 سكرتيرين (اختياري)</div>
+          </div>
+          <div class="plan-card" id="plan-large" onclick="selectPlan('large')">
+            <div class="plan-name">🏦 مجمع كبير</div>
+            <div class="plan-price">250,000 <span>د.ع/شهر</span></div>
+            <div class="plan-features">15 طبيب+15 سكرتير<br>صيدلاني+وصفات مباشرة</div>
+          </div>
+        </div>
+        <button class="btn btn-primary" onclick="goStep1Next()">التالي ←</button>
+      </div>
+
+      <!-- الخطوة 2: اختيار الدور (تُحدَّد تلقائياً حسب الباقة، الخطوة مخفية) -->
+      <div class="step" id="reg-step-2" style="display:none">
+        <p style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:10px;text-align:center;">ما هو دورك في العيادة؟</p>
+        <div class="roles-grid">
+          <div class="role-card selected" id="role-manager" onclick="selectRole('manager')">
+            <div class="role-icon">👨‍💼</div>
+            <div class="role-name">مدير العيادة</div>
+            <div class="role-desc">إدارة الموظفين والمالية</div>
+          </div>
+          <div class="role-card" id="role-doctor" onclick="selectRole('doctor')">
+            <div class="role-icon">👨‍⚕️</div>
+            <div class="role-name">دكتور</div>
+            <div class="role-desc">ملفات المرضى والوصفات</div>
+          </div>
+        </div>
+        <button class="btn btn-primary" onclick="goStep(3)">التالي ←</button>
+        <button class="btn btn-outline" onclick="goStep(1)">← رجوع</button>
+      </div>
+
+      <!-- الخطوة 3: البيانات الشخصية -->
+      <div class="step" id="reg-step-3">
+        <div class="form-group">
+          <label>اسم العيادة / المجمع</label>
+          <div class="input-wrap">
+            <span class="input-icon">🏥</span>
+            <input type="text" id="reg-clinic-name" placeholder="مثال: عيادة الشفاء">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>اسمك الكامل</label>
+          <div class="input-wrap">
+            <span class="input-icon">👤</span>
+            <input type="text" id="reg-full-name" placeholder="الاسم الكامل">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>رقم الهاتف</label>
+          <div class="input-wrap">
+            <span class="input-icon">📱</span>
+            <input type="tel" id="reg-phone" placeholder="07XXXXXXXXX">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>البريد الإلكتروني (للتحقق)</label>
+          <div class="input-wrap">
+            <span class="input-icon">📧</span>
+            <input type="email" id="reg-email" placeholder="example@email.com">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>كلمة المرور</label>
+          <div class="input-wrap">
+            <span class="input-icon">🔒</span>
+            <input type="password" id="reg-password" placeholder="8 أحرف على الأقل">
+          </div>
+        </div>
+        <button class="btn btn-primary" onclick="sendOTP()">إرسال رمز التحقق ←</button>
+        <button class="btn btn-outline" onclick="goStep(1)">← رجوع</button>
+      </div>
+
+      <!-- الخطوة 4: OTP -->
+      <div class="step" id="reg-step-4">
+        <p style="text-align:center;color:var(--text-muted);font-size:13px;margin-bottom:18px;">
+          أرسلنا رمز تحقق إلى بريدك<br>
+          <strong id="otp-email-display" style="color:var(--text)"></strong>
+        </p>
+        <div style="margin:10px 0;">
+          <input type="text" id="otp-single" maxlength="6" placeholder="أدخل الرمز المكون من 6 أرقام"
+            style="width:100%;padding:14px;font-size:22px;font-weight:700;text-align:center;letter-spacing:8px;
+            border:2px solid var(--border);border-radius:12px;font-family:'Tajawal',sans-serif;outline:none;"
+            oninput="this.value=this.value.replace(/[^0-9]/g,'')"
+            onfocus="this.style.borderColor='var(--primary)'"
+            onblur="this.style.borderColor='var(--border)'">
+        </div>
+        <div style="text-align:center;margin-top:8px;">
+          <button class="resend-btn" id="resend-btn" onclick="resendOTP()">إعادة إرسال الرمز</button>
+          <div class="timer-text" id="otp-timer"></div>
+        </div>
+        <br>
+        <button class="btn btn-primary" onclick="verifyOTP()">تحقق والمتابعة ←</button>
+        <button class="btn btn-outline" onclick="goStep(3)">← رجوع</button>
+      </div>
+
+      <!-- الخطوة 5: الدفع (للباقات المدفوعة) -->
+      <div class="step" id="reg-step-5">
+        <div style="text-align:center;margin-bottom:18px;">
+          <div style="font-size:38px;margin-bottom:8px;">💳</div>
+          <div style="font-size:16px;font-weight:800;">إتمام الدفع</div>
+          <div style="font-size:13px;color:var(--text-muted);margin-top:4px;" id="pay-plan-summary"></div>
+        </div>
+        <div style="background:var(--bg);border-radius:12px;padding:14px;margin-bottom:14px;">
+          <div style="font-size:13px;font-weight:700;margin-bottom:10px;">اختر طريقة الدفع:</div>
+          <button class="btn btn-primary" onclick="payWhatsapp('zain')">📱 زين كاش — واتساب</button>
+          <button class="btn" style="background:#4CAF50;color:#fff;margin-top:8px;" onclick="payWhatsapp('master')">💳 ماستر كارد / سوبر كي — واتساب</button>
+        </div>
+        <div style="background:#fff3cc;border-radius:9px;padding:11px;font-size:12px;color:#b07800;line-height:1.7;">
+          ⚠️ بعد التحويل يتم تفعيل اشتراكك خلال ساعة من قِبل فريقنا.
+        </div>
+        <button class="btn btn-outline" style="margin-top:10px;" onclick="goStep(4)">← رجوع</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+</div><!-- auth-screen -->
+
+<!-- ===== شاشة انتهاء الاشتراك ===== -->
+<div class="screen" id="expired-screen">
+  <div class="expired-card">
+    <div class="expired-icon" id="exp-icon">⚠️</div>
+    <div class="expired-title" id="exp-title">انتهى الاشتراك</div>
+    <div class="expired-sub" id="exp-sub"></div>
+    <div class="days-left" id="exp-days" style="display:none"></div>
+    <button class="btn btn-whatsapp" onclick="renewWhatsapp()">💬 تجديد عبر واتساب</button>
+    <button class="btn btn-outline" style="margin-top:8px" onclick="doLogout()">تسجيل الخروج</button>
+  </div>
+</div>
+
+<!-- ===== لوحة المدير العام ===== -->
+<div class="screen" id="admin-screen">
+  <div class="sub-warning-banner" id="sub-warning-banner">
+    ⚠️ <span id="sub-warning-text"></span>
+    <button class="btn btn-sm btn-whatsapp" style="margin-right:auto;" onclick="renewWhatsapp()">تجديد الآن</button>
+  </div>
+  <div class="admin-topbar">
+    <div>
+      <h1>🛡️ لوحة تحكم المدير العام</h1>
+      <div style="font-size:11px;color:rgba(255,255,255,.6);margin-top:1px;">عبدالله — صلاحيات مطلقة</div>
+    </div>
+    <button class="btn btn-sm" style="background:rgba(255,255,255,.15);color:#fff;width:auto;" onclick="doLogout()">خروج</button>
+  </div>
+  <div class="admin-content">
+    <div class="admin-grid">
+      <div class="admin-stat"><div class="admin-stat-val" id="stat-total">0</div><div class="admin-stat-label">إجمالي العيادات</div></div>
+      <div class="admin-stat"><div class="admin-stat-val" id="stat-active" style="color:var(--primary)">0</div><div class="admin-stat-label">نشطة</div></div>
+      <div class="admin-stat"><div class="admin-stat-val" id="stat-trial" style="color:var(--accent)">0</div><div class="admin-stat-label">تجريبية</div></div>
+    </div>
+
+    <div class="admin-tabs">
+      <button class="admin-tab-btn active" onclick="adminTab('clinics')">🏥 العيادات</button>
+      <button class="admin-tab-btn" onclick="adminTab('activate')">⚡ تفعيل اشتراك</button>
+    </div>
+
+    <!-- تبويب العيادات -->
+    <div class="admin-tab-content active" id="tab-clinics">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">العيادات المسجلة</div>
+          <input type="text" class="search-bar" placeholder="بحث..." oninput="filterClinics(this.value)">
+        </div>
+        <div style="overflow-x:auto;">
+          <table id="clinics-table">
+            <thead><tr><th>العيادة</th><th>الهاتف</th><th>الخطة</th><th>الحالة</th><th>الانتهاء</th><th>إجراء</th></tr></thead>
+            <tbody id="clinics-tbody"><tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:24px;">جاري التحميل...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- تبويب التفعيل -->
+    <div class="admin-tab-content" id="tab-activate">
+      <div class="card">
+        <div class="card-header"><div class="card-title">⚡ تفعيل اشتراك يدوي</div></div>
+        <div class="card-body">
+          <div class="activate-form">
+            <div class="form-group"><label>رقم الهاتف</label><input type="tel" id="act-phone" placeholder="07XXXXXXXXX"></div>
+            <div class="form-group"><label>الخطة</label>
+              <select id="act-plan">
+                <option value="basic">عيادة أساسية — 30,000</option>
+                <option value="medium">مجمع صغير — 100,000</option>
+                <option value="large">مجمع كبير — 250,000</option>
+              </select>
+            </div>
+            <div class="form-group"><label>المدة</label>
+              <select id="act-months">
+                <option value="1">شهر</option>
+                <option value="3">3 أشهر</option>
+                <option value="6">6 أشهر</option>
+                <option value="12">سنة</option>
+              </select>
+            </div>
+            <button class="btn btn-primary btn-sm" style="height:42px;margin-top:20px;" onclick="adminActivate()">تفعيل</button>
+          </div>
+          <div id="act-alert" class="alert" style="margin-top:12px;margin-bottom:0;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== لوحة مدير العيادة ===== -->
+<div class="screen" id="clinic-manager-screen">
+  <div class="sub-warning-banner" id="clinic-warning-banner">
+    ⚠️ <span id="clinic-warning-text"></span>
+    <button class="btn btn-sm btn-whatsapp" style="margin-right:auto;" onclick="renewWhatsapp()">تجديد الآن</button>
+  </div>
+  <div class="admin-topbar">
+    <div>
+      <h1 id="clinic-manager-title">👨‍💼 لوحة مدير العيادة</h1>
+      <div style="font-size:11px;color:rgba(255,255,255,.6);margin-top:1px;" id="clinic-manager-sub"></div>
+    </div>
+    <button class="btn btn-sm" style="background:rgba(255,255,255,.15);color:#fff;width:auto;" onclick="doLogout()">خروج</button>
+  </div>
+  <div class="admin-content">
+
+    <div class="admin-tabs">
+      <button class="admin-tab-btn active" onclick="clinicTab('employees')">👥 الموظفون</button>
+      <button class="admin-tab-btn" onclick="clinicTab('finance')">💰 المالية</button>
+      <button class="admin-tab-btn" onclick="clinicTab('stats')">📊 الإحصائيات</button>
+    </div>
+
+    <!-- الموظفون -->
+    <div class="admin-tab-content active" id="ctab-employees">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">👥 موظفو العيادة</div>
+          <button class="btn btn-primary btn-sm" style="width:auto;" onclick="showAddEmployee()">+ إضافة موظف</button>
+        </div>
+        <div class="card-body" id="add-employee-form" style="display:none;border-bottom:1px solid var(--border);margin-bottom:0;">
+          <div style="font-size:13px;font-weight:700;margin-bottom:12px;">إضافة موظف جديد</div>
+          <div class="employee-form">
+            <div class="form-group"><label>الاسم الكامل</label><input type="text" id="emp-name" placeholder="اسم الموظف"></div>
+            <div class="form-group"><label>رقم الهاتف</label><input type="tel" id="emp-phone" placeholder="07XXXXXXXXX"></div>
+            <div class="form-group"><label>الدور</label>
+              <select id="emp-role" onchange="onRoleChange(this.value)">
+                <option value="doctor">👨‍⚕️ دكتور</option>
+                <option value="secretary">🗂️ سكرتير</option>
+                <option value="pharmacist">💊 صيدلاني</option>
+              </select>
+            </div>
+            <div class="form-group" id="specialty-group">
+              <label>التخصص</label>
+              <select id="emp-specialty">
+                <option value="">-- اختر التخصص --</option>
+              </select>
+            </div>
+            <div class="form-group"><label>كلمة المرور</label><input type="text" id="emp-password" placeholder="كلمة مرور للموظف"></div>
+          </div>
+          <div style="display:flex;gap:8px;margin-top:12px;">
+            <button class="btn btn-primary btn-sm" style="width:auto;" onclick="addEmployee()">حفظ الموظف</button>
+            <button class="btn btn-outline btn-sm" style="width:auto;" onclick="hideAddEmployee()">إلغاء</button>
+          </div>
+          <div id="emp-alert" class="alert" style="margin-top:10px;margin-bottom:0;"></div>
+        </div>
+        <div style="overflow-x:auto;">
+          <table>
+            <thead><tr><th>الاسم</th><th>الهاتف</th><th>الدور</th><th>الحالة</th><th>إجراء</th></tr></thead>
+            <tbody id="employees-tbody"><tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:24px;">لا يوجد موظفون بعد</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- المالية -->
+    <div class="admin-tab-content" id="ctab-finance">
+      <div class="admin-grid" style="grid-template-columns:1fr 1fr 1fr;">
+        <div class="admin-stat"><div class="admin-stat-val" id="fin-today">0</div><div class="admin-stat-label">إيرادات اليوم (د.ع)</div></div>
+        <div class="admin-stat"><div class="admin-stat-val" id="fin-month">0</div><div class="admin-stat-label">إيرادات الشهر (د.ع)</div></div>
+        <div class="admin-stat"><div class="admin-stat-val" id="fin-total">0</div><div class="admin-stat-label">إجمالي الإيرادات (د.ع)</div></div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-title">💰 آخر الفواتير</div></div>
+        <div style="overflow-x:auto;">
+          <table>
+            <thead><tr><th>المريض</th><th>الدكتور</th><th>المبلغ</th><th>التاريخ</th><th>الحالة</th></tr></thead>
+            <tbody id="finance-tbody"><tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:24px;">جاري التحميل...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- الإحصائيات -->
+    <div class="admin-tab-content" id="ctab-stats">
+      <div class="admin-grid" style="grid-template-columns:1fr 1fr;">
+        <div class="admin-stat"><div class="admin-stat-val" id="stat-patients">0</div><div class="admin-stat-label">إجمالي المرضى</div></div>
+        <div class="admin-stat"><div class="admin-stat-val" id="stat-appointments">0</div><div class="admin-stat-label">المواعيد الكلية</div></div>
+      </div>
+    </div>
+
+  </div><!-- admin-content -->
+  </div><!-- clinic-manager-screen -->
+
+<script>
+// ===== شبكة أمان: لو صار أي خطأ JS غير متوقع، نطبعه بالواجهة بدل شاشة بيضة صامتة =====
+window.addEventListener('error', function(e){
+  console.error('خطأ JS عام:', e.message, e.filename, e.lineno);
+});
+
+// ===== الإعدادات =====
+const SUPABASE_URL = 'https://aloozrrswipwtzmghrku.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_-81NXYyjUAqRSnmiTA_IGA_T5fHPe92';
+const WHATSAPP = '9647711149039';
+// تم نقل بيانات المدير العام إلى جدول super_admins في Supabase (راجع تعليمات التطبيق)
+
+// ===== إعدادات EmailJS =====
+const EMAILJS_PUBLIC_KEY = 'gktdfxmMowibf0yaK';
+const EMAILJS_SERVICE_ID = 'service_hx7jzce';
+const EMAILJS_TEMPLATE_ID = 'template_a4r3jbf';
+const OTP_VALID_MINUTES = 10;
+try {
+  if (typeof emailjs !== 'undefined') {
+    emailjs.init({ publicKey: EMAILJS_PUBLIC_KEY });
+  } else {
+    console.error('emailjs لم تُحمّل (تحقق من الاتصال أو حظر CDN) — استمرار التشغيل بدون OTP بالبريد.');
+  }
+} catch(e) {
+  console.error('فشل تهيئة emailjs:', e);
+}
+
+let currentUser = null;
+let selectedPlan = 'trial';
+let selectedRole = 'manager';
+let allClinics = [];
+let otpTimer = null;
+
+// ===== Supabase =====
+async function sbFetch(path, method='GET', body=null, extra={}) {
+  const h = {'apikey':SUPABASE_KEY,'Authorization':`Bearer ${SUPABASE_KEY}`,'Content-Type':'application/json','Prefer':'return=representation',...extra};
+  const opts = {method, headers:h};
+  if(body) opts.body = JSON.stringify(body);
+  const res = await fetch(SUPABASE_URL+'/rest/v1/'+path, opts);
+  const text = await res.text();
+  try { return {ok:res.ok, data:text?JSON.parse(text):null, status:res.status}; }
+  catch { return {ok:false, data:text, status:res.status}; }
+}
+
+// ===== auth-handler Edge Function =====
+// كل عمليات login/register/checkPhoneExists تمر من هنا بدل الاتصال المباشر بالجداول الحساسة.
+const AUTH_HANDLER_URL = SUPABASE_URL + '/functions/v1/auth-handler';
+async function authHandlerCall(action, payload={}) {
+  try {
+    const res = await fetch(AUTH_HANDLER_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${SUPABASE_KEY}`,
+        'apikey': SUPABASE_KEY
+      },
+      body: JSON.stringify({ action, payload })
+    });
+    const data = await res.json();
+    return data;
+  } catch(e) {
+    return { ok:false, error: 'فشل الاتصال بالسيرفر، تحقق من اتصال الإنترنت' };
+  }
+}
+
+// ===== مساعدات =====
+function showLoading(t='جاري التحميل...') { document.getElementById('loading-text').textContent=t; document.getElementById('loading-overlay').classList.remove('hidden'); }
+function hideLoading() { document.getElementById('loading-overlay').classList.add('hidden'); }
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s=>{ s.classList.remove('active'); s.style.display='none'; });
+  const t=document.getElementById(id);
+  if(t){ t.classList.add('active'); t.style.display='flex'; t.style.flexDirection='column'; }
+}
+function showAlert(msg, type='error', elId='auth-alert') {
+  const el=document.getElementById(elId);
+  if(!el) return;
+  el.className=`alert alert-${type}`;
+  el.textContent=msg;
+  el.style.display='block';
+  setTimeout(()=>el.style.display='none', 5000);
+}
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+// ===== تشفير كلمة المرور بـ SHA-256 (Web Crypto API المدمج بالمتصفح) =====
+// يستبدل btoa() الذي كان Base64 فقط (وليس تشفيراً حقيقياً).
+// الصيغة: SHA-256(password + phone) — نفس الـ salt السابق لضمان التوافق مع الحسابات الجديدة.
+// ملاحظة: الحسابات القديمة المحفوظة بـ btoa تحتاج إعادة تعيين كلمة مرور للترقية.
+async function hashPassword(password, phone) {
+  const msgBuffer = new TextEncoder().encode(password + phone);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+// ===== توحيد صيغة رقم الهاتف العراقي: يقبل +9647x, 009647x, 9647x, 07x, 7x, 0096407x وأي تركيبة بأصفار زائدة =====
+function normalizeIraqiPhone(input) {
+  if(!input) return null;
+  let digits = String(input).replace(/\D/g,''); // إزالة كل ما هو غير رقم (+ ومسافات وغيرها)
+  if(!digits) return null;
+  if(digits.startsWith('00')) digits = digits.slice(2); // 00 الدولي
+  while(digits.startsWith('964')) digits = digits.slice(3); // كود العراق (قد يتكرر بإدخال خاطئ)
+  while(digits.startsWith('0')) digits = digits.slice(1); // الصفر المحلي (قد يتكرر)
+  if(!/^7\d{9}$/.test(digits)) return null; // يجب أن يبدأ بـ7 وطوله 10 أرقام
+  return '+964' + digits;
+}
+
+// ===== التبويبات =====
+function switchTab(tab) {
+  document.querySelectorAll('.auth-tab').forEach((t,i)=>t.classList.toggle('active',(i===0&&tab==='login')||(i===1&&tab==='register')));
+  document.getElementById('login-form').style.display = tab==='login'?'block':'none';
+  document.getElementById('register-form').style.display = tab==='register'?'block':'none';
+  document.getElementById('auth-alert').style.display='none';
+  if(tab==='register') goStep(1);
+}
+
+// ===== قراءة الباقة من URL =====
+function applyURLParams() {
+  const params = new URLSearchParams(window.location.search);
+  const plan = params.get('plan');
+  const tab = params.get('tab');
+  const validPlans = ['trial','basic','medium','large'];
+  if(tab === 'register' || plan) {
+    switchTab('register');
+    if(plan && validPlans.includes(plan)) {
+      selectPlan(plan);
+      // إضافة شريط صغير يوضح الباقة المختارة
+      const planNames = {trial:'التجريبية المجانية',basic:'العيادة الأساسية',medium:'المجمع الصغير',large:'المجمع الكبير'};
+      const banner = document.getElementById('selected-plan-banner');
+      if(banner) {
+        banner.textContent = `✅ اخترت: باقة ${planNames[plan]}`;
+        banner.style.display = 'block';
+      }
+    }
+  }
+}
+
+function goStep(n) {
+  document.querySelectorAll('.step').forEach(s=>s.classList.remove('active'));
+  document.getElementById(`reg-step-${n}`)?.classList.add('active');
+}
+
+// ===== الباقة والدور =====
+function selectPlan(p) {
+  selectedPlan=p;
+  document.querySelectorAll('.plan-card').forEach(c=>c.classList.remove('selected'));
+  document.getElementById(`plan-${p}`)?.classList.add('selected');
+}
+function selectRole(r) {
+  selectedRole=r;
+  document.querySelectorAll('.role-card').forEach(c=>c.classList.remove('selected'));
+  document.getElementById(`role-${r}`)?.classList.add('selected');
+}
+
+// ===== تحديد الدور تلقائياً حسب الباقة، وتجاوز خطوة اختيار الدور =====
+function goStep1Next() {
+  if (selectedPlan === 'medium' || selectedPlan === 'large') {
+    selectRole('manager');
+  } else {
+    // trial أو basic
+    selectRole('doctor');
+  }
+  goStep(3);
+}
+
+// ===== إرسال OTP =====
+async function sendOTP() {
+  const clinicName=document.getElementById('reg-clinic-name').value.trim();
+  const fullName=document.getElementById('reg-full-name').value.trim();
+  const phone=document.getElementById('reg-phone').value.trim();
+  const email=document.getElementById('reg-email').value.trim().toLowerCase();
+  const password=document.getElementById('reg-password').value;
+
+  if(!clinicName) return showAlert('أدخل اسم العيادة');
+  if(!fullName) return showAlert('أدخل اسمك الكامل');
+  const fullPhone=normalizeIraqiPhone(phone);
+  if(!fullPhone) return showAlert('أدخل رقم هاتف عراقي صحيح (مثال: 07xxxxxxxxx)');
+  if(!email||!email.includes('@')) return showAlert('أدخل بريد إلكتروني صحيح');
+  if(!password||password.length<8) return showAlert('كلمة المرور 8 أحرف على الأقل');
+
+  showLoading('التحقق من الرقم...');
+  const check = await authHandlerCall('checkPhoneExists', { phone: fullPhone });
+  hideLoading();
+  if(check.ok && check.exists) return showAlert('هذا الرقم مسجل مسبقاً. يرجى تسجيل الدخول.');
+
+  showLoading('إرسال رمز التحقق...');
+  const result = await generateAndSendOTP(email);
+  hideLoading();
+  if(result.ok) {
+    document.getElementById('otp-email-display').textContent=email;
+    goStep(4);
+    startOTPTimer();
+  } else {
+    showAlert('فشل الإرسال: ' + result.error);
+  }
+}
+
+// ===== توليد وإرسال رمز OTP مباشرة عبر EmailJS (بدون Supabase) =====
+let pendingOTP = null; // {email, code, expiresAt, verified}
+async function generateAndSendOTP(email) {
+  const code=String(Math.floor(100000+Math.random()*900000));
+  const now=new Date();
+  const expiresAt=now.getTime()+OTP_VALID_MINUTES*60*1000;
+  try {
+    // إرسال الرمز مباشرة عبر EmailJS
+    await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
+      email, passcode:code, time:String(OTP_VALID_MINUTES)
+    });
+    pendingOTP = { email, code, expiresAt, verified:false };
+    return { ok:true };
+  } catch(e) {
+    const detail = (e && (e.text || e.message)) ? (e.text || e.message) : JSON.stringify(e);
+    return { ok:false, error: detail };
+  }
+}
+
+function startOTPTimer(s=60) {
+  clearInterval(otpTimer);
+  document.getElementById('resend-btn').disabled=true;
+  const el=document.getElementById('otp-timer');
+  el.textContent=`إعادة الإرسال بعد ${s} ثانية`;
+  otpTimer=setInterval(()=>{
+    s--;
+    if(s<=0){ clearInterval(otpTimer); document.getElementById('resend-btn').disabled=false; el.textContent=''; }
+    else el.textContent=`إعادة الإرسال بعد ${s} ثانية`;
+  },1000);
+}
+
+async function resendOTP() {
+  const email=document.getElementById('reg-email').value.trim().toLowerCase();
+  if(!email) return;
+  showLoading('إعادة إرسال...');
+  const result=await generateAndSendOTP(email);
+  hideLoading();
+  startOTPTimer();
+  if(result.ok) showAlert('تم إعادة الإرسال ✅','success');
+  else showAlert('فشل الإرسال: ' + result.error);
+}
+
+function otpNext(el,prev,next) {
+  if(el.value&&next) document.getElementById(next)?.focus();
+  if(!el.value&&prev) document.getElementById(prev)?.focus();
+}
+
+// ===== التحقق من OTP =====
+async function verifyOTP() {
+  const code=document.getElementById('otp-single').value.trim();
+  if(code.length<6) return showAlert('أدخل الرمز كاملاً');
+  const email=document.getElementById('reg-email').value.trim().toLowerCase();
+
+  showLoading('التحقق...');
+  try {
+    if(!pendingOTP || pendingOTP.email!==email) { hideLoading(); return showAlert('اطلب رمزاً جديداً'); }
+    if(pendingOTP.expiresAt<Date.now()) { hideLoading(); return showAlert('انتهت صلاحية الرمز، اطلب رمزاً جديداً'); }
+    if(pendingOTP.code!==code) { hideLoading(); return showAlert('الرمز غير صحيح'); }
+
+    pendingOTP.verified=true;
+    hideLoading();
+    if(selectedPlan==='trial') { await createAccount(); }
+    else { const planNames={basic:'عيادة أساسية — 30,000 د.ع/شهر',medium:'مجمع صغير — 100,000 د.ع/شهر',large:'مجمع كبير — 250,000 د.ع/شهر'}; document.getElementById('pay-plan-summary').textContent=planNames[selectedPlan]; goStep(5); }
+  } catch(e) { hideLoading(); showAlert('خطأ في التحقق'); }
+}
+
+function payWhatsapp(method) {
+  const planNames={basic:'عيادة أساسية 30,000',medium:'مجمع صغير 100,000',large:'مجمع كبير 250,000'};
+  const m=method==='zain'?'زين كاش':'ماستر كارد/سوبر كي';
+  const phone=document.getElementById('reg-phone').value.trim();
+  const clinic=document.getElementById('reg-clinic-name').value.trim();
+  const msg=`مرحباً، أريد الاشتراك في عيادة\nالخطة: ${planNames[selectedPlan]} د.ع/شهر\nطريقة الدفع: ${m}\nالعيادة: ${clinic}\nالهاتف: ${phone}`;
+  window.open(`https://wa.me/${WHATSAPP}?text=${encodeURIComponent(msg)}`, '_blank');
+  createAccount('pending');
+}
+
+// ===== إنشاء الحساب =====
+async function createAccount(status='trial') {
+  const clinicName=document.getElementById('reg-clinic-name').value.trim();
+  const fullName=document.getElementById('reg-full-name').value.trim();
+  const phone=document.getElementById('reg-phone').value.trim();
+  const email=document.getElementById('reg-email').value.trim().toLowerCase();
+  const password=document.getElementById('reg-password').value;
+
+  showLoading('إنشاء الحساب...');
+  const res = await authHandlerCall('register', {
+    clinicName, fullName, phone, email, password,
+    plan: selectedPlan, role: selectedRole, status
+  });
+  hideLoading();
+
+  if(res.ok) {
+    currentUser = { ...res.user };
+    localStorage.setItem('clinic_user', JSON.stringify(currentUser));
+    if(res.token) localStorage.setItem('session_token', res.token);
+    if(status==='trial') { showAlert('تم إنشاء حسابك! تمتع بـ 14 يوم مجاناً 🎉','success'); setTimeout(()=>redirectAfterLogin(),1500); }
+    else showAlert('تم إنشاء حسابك! سيتم التفعيل بعد تأكيد الدفع ✅','success');
+  } else {
+    showAlert('خطأ في الإنشاء: ' + (res.error || 'unknown'));
+  }
+}
+
+// ===== تسجيل الدخول =====
+async function doLogin() {
+  let identifier=document.getElementById('login-identifier').value.trim();
+  const password=document.getElementById('login-password').value;
+  if(!identifier) return showAlert('أدخل رقم الهاتف أو البريد الإلكتروني');
+  if(!password) return showAlert('أدخل كلمة المرور');
+
+  // تنظيف رقم الهاتف إذا لم يكن بريداً إلكترونياً
+  if(!identifier.includes('@')) {
+    const normalized = normalizeIraqiPhone(identifier);
+    if(normalized) identifier = normalized;
+    else return showAlert('أدخل رقم هاتف عراقي صحيح (مثال: 07xxxxxxxxx)');
+  }
+
+  showLoading('تسجيل الدخول...');
+  const res = await authHandlerCall('login', { identifier, password });
+  hideLoading();
+
+  if(!res.ok) {
+    return showAlert(res.error || 'خطأ في تسجيل الدخول');
+  }
+
+  // حساب منتهي الصلاحية (تجريبي)
+  if(res.expired) {
+    if(res.isOwner) { currentUser = res.user; showExpiredScreen(true); }
+    else { showExpiredScreen(false); }
+    return;
+  }
+
+  currentUser = { ...res.user };
+  localStorage.setItem('clinic_user', JSON.stringify(currentUser));
+  if(res.token) localStorage.setItem('session_token', res.token);
+
+  if(currentUser.is_super_admin) {
+    try {
+      showScreen('admin-screen');
+      loadAdminData();
+    } catch(err) {
+      console.error('خطأ في تحميل لوحة الأدمن:', err);
+    }
+    return;
+  }
+
+  redirectAfterLogin();
+}
+
+// ===== التوجيه بعد الدخول =====
+function redirectAfterLogin() {
+  const user=currentUser;
+  if(!user) return;
+  if(user.is_super_admin) { showScreen('admin-screen'); loadAdminData(); return; }
+
+  // فحص الاشتراك المدفوع
+  if(user.plan!=='trial'&&user.expires_at) {
+    const exp=new Date(user.expires_at);
+    const now=new Date();
+    const daysLeft=Math.ceil((exp-now)/(1000*60*60*24));
+    const graceEnd=new Date(exp.getTime()+7*24*60*60*1000);
+    if(now>graceEnd) { showExpiredScreen(false); return; }
+    if(daysLeft<=7&&daysLeft>0) showSubWarning(`اشتراكك ينتهي خلال ${daysLeft} يوم! جدد الآن لتجنب إيقاف الخدمة.`);
+    if(now>exp) showSubWarning(`انتهى اشتراكك! لديك ${Math.ceil((graceEnd-now)/(1000*60*60*24))} يوم كمهلة أخيرة.`,true);
+  }
+
+  // توجيه حسب الدور — كل الأدوار (بما فيها المدير) تذهب للوحة التحكم الموحدة
+  window.location.href='dashboard.html';
+}
+
+function showSubWarning(msg, urgent=false) {
+  ['sub-warning-banner','clinic-warning-banner'].forEach(id=>{
+    const b=document.getElementById(id);
+    if(!b) return;
+    const t=b.querySelector('span');
+    if(t) t.textContent=msg;
+    b.classList.add('show');
+    if(urgent) { b.style.background='#fdf0f0'; b.style.borderColor='#e05252'; b.style.color='#e05252'; }
+  });
+}
+
+// ===== انتهاء الاشتراك =====
+// تنبيه مهم: هذه الدالة لا تحذف أي بيانات نهائياً تحت أي ظرف — حتى لو انتهت
+// التجربة المجانية أو الاشتراك المدفوع. كل بيانات المرضى والوصفات والفواتير
+// تبقى محفوظة في Supabase للأبد. الحذف الفعلي (إن لزم) يجب أن يتم يدوياً
+// من قاعدة البيانات مباشرة، وليس عبر أي مسار تلقائي بالتطبيق.
+//
+// كل ما تفعله هذه الدالة هو "تجميد" العيادة: status='expired' يمنعها من
+// تسجيل الدخول (راجع منطق التحقق من status في authHandlerCall/login)، لكن
+// بياناتها (appointments, prescriptions, invoices, patients...) تبقى كما هي
+// بانتظار: إما تجديد الاشتراك (وعندها تعود كل البيانات تلقائياً)، أو حذف
+// يدوي صريح يقرره صاحب النظام بنفسه.
+async function suspendClinic(id) {
+  showLoading('تجميد حساب العيادة...');
+  await sbFetch(`clinics_auth?id=eq.${id}`,'PATCH',{status:'expired',plan:'expired',suspended_at:new Date().toISOString()});
+  hideLoading();
+}
+// ملاحظة: هذه الدالة غير مستدعاة من أي زر حالياً (وهذا متعمد، لا خطأ) —
+// تجميد عيادة من لوحة الأدمن يتم فعلياً عبر quickDeactivate أدناه. تركناها
+// كدالة عامة جاهزة لو احتجت لاحقاً تجميد عيادة تلقائياً من مكان آخر
+// (مثلاً بانتهاء مهلة السماح السبعة أيام) دون الحاجة لإعادة كتابة المنطق.
+
+// === تمت إزالة الدالة القديمة deleteTrialData بشكل متعمد ===
+// كانت تحذف appointments / medical_records / prescriptions / invoices /
+// patients / medications / clinic_users نهائياً (DELETE حقيقي بدون استرجاع)،
+// وهذا غير مقبول لبيانات طبية. لم تكن هذه الدالة تُستدعى من أي مكان فعلياً
+// بالنسخة السابقة من الكود (لا زر ولا مسار تلقائي يصلها)، لكن إبقاؤها كانت
+// تشكل خطراً كامناً لو رُبطت بزر أو مهمة مجدولة (cron) بالمستقبل دون انتباه.
+
+function showExpiredScreen(isTrial=false) {
+  if(isTrial) {
+    document.getElementById('exp-icon').textContent='🗑️';
+    document.getElementById('exp-title').textContent='انتهت الفترة التجريبية';
+    document.getElementById('exp-sub').textContent='تم حذف جميع البيانات التجريبية تلقائياً. اشترك بإحدى الخطط المدفوعة للاستمرار.';
+    document.getElementById('exp-days').style.display='none';
+  } else {
+    document.getElementById('exp-icon').textContent='🔒';
+    document.getElementById('exp-title').textContent='تم إيقاف الخدمة';
+    document.getElementById('exp-sub').textContent='انتهى اشتراكك. جدد الاشتراك للاستمرار في استخدام النظام.';
+  }
+  showScreen('expired-screen');
+}
+
+function renewWhatsapp() {
+  const u=currentUser||{};
+  const msg=`مرحباً، أريد تجديد اشتراكي\nالعيادة: ${u.clinic_name||''}\nالهاتف: ${u.phone||''}`;
+  window.open(`https://wa.me/${WHATSAPP}?text=${encodeURIComponent(msg)}`,'_blank');
+}
+
+// ===== لوحة مدير العيادة =====
+async function loadClinicManagerData() {
+  const user=currentUser;
+  document.getElementById('clinic-manager-title').textContent=`👨‍💼 ${user.clinic_name}`;
+  document.getElementById('clinic-manager-sub').textContent=`${user.full_name||''} — مدير العيادة`;
+  loadEmployees();
+  loadFinance();
+  loadStats();
+}
+
+async function loadEmployees() {
+  const user=currentUser;
+  const res=await sbFetch(`clinic_users?clinic_id=eq.${user.clinic_id||user.id}&select=*&order=created_at.asc`);
+  const tbody=document.getElementById('employees-tbody');
+  if(!res.ok||!res.data?.length) { tbody.innerHTML='<tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:24px;">لا يوجد موظفون بعد، أضف موظفاً جديداً</td></tr>'; return; }
+  const roleNames={doctor:'👨‍⚕️ دكتور',secretary:'🗂️ سكرتير',pharmacist:'💊 صيدلاني',manager:'👨‍💼 مدير'};
+  tbody.innerHTML=res.data.map(e=>`<tr>
+    <td><strong>${esc(e.full_name)}</strong></td>
+    <td>${esc(e.phone||'')}</td>
+    <td>${roleNames[e.role]||e.role}</td>
+    <td>${e.is_active?'<span class="badge badge-green">نشط</span>':'<span class="badge badge-red">موقوف</span>'}</td>
+    <td><button class="action-btn ${e.is_active?'btn-deactivate':'btn-activate'}" onclick="toggleEmployee('${e.id}',${!e.is_active})">${e.is_active?'إيقاف':'تفعيل'}</button>
+    <button class="action-btn btn-delete" style="margin-right:4px;" onclick="deleteEmployee('${e.id}','${esc(e.full_name)}')">حذف</button></td>
+  </tr>`).join('');
+}
+
+function showAddEmployee() {
+  document.getElementById('add-employee-form').style.display='block';
+  // الدور الافتراضي دكتور — نشغّل قائمة التخصصات مباشرة
+  if (typeof buildSpecialtySelect === 'function') buildSpecialtySelect('emp-specialty');
+  document.getElementById('specialty-group').style.display='block';
+}
+function hideAddEmployee() { document.getElementById('add-employee-form').style.display='none'; }
+
+function onRoleChange(role) {
+  const g = document.getElementById('specialty-group');
+  if (role === 'doctor') {
+    g.style.display = 'block';
+    if (typeof buildSpecialtySelect === 'function') {
+      buildSpecialtySelect('emp-specialty');
+    }
+  } else {
+    g.style.display = 'none';
+    document.getElementById('emp-specialty').value = '';
+  }
+}
+
+async function addEmployee() {
+  const name=document.getElementById('emp-name').value.trim();
+  const phone=document.getElementById('emp-phone').value.trim();
+  const role=document.getElementById('emp-role').value;
+  const specialty=document.getElementById('emp-specialty')?.value||'';
+  if(role==='doctor'&&!specialty) return showAlert('اختر تخصص الدكتور','error','emp-alert');
+  const password=document.getElementById('emp-password').value.trim();
+  if(!name||!phone||!password) return showAlert('أكمل جميع الحقول','error','emp-alert');
+  const fullPhone=normalizeIraqiPhone(phone);
+  if(!fullPhone) return showAlert('أدخل رقم هاتف عراقي صحيح (مثال: 07xxxxxxxxx)','error','emp-alert');
+  const passHash=await hashPassword(password, fullPhone);
+  const clinicId=currentUser.clinic_id||currentUser.id;
+  showLoading('إضافة الموظف...');
+  const res=await sbFetch('clinic_users','POST',{clinic_id:clinicId,full_name:name,phone:fullPhone,role,specialty,username:fullPhone,password_hash:passHash,is_active:true});
+  hideLoading();
+  if(res.ok) { showAlert('تم إضافة الموظف ✅','success','emp-alert'); hideAddEmployee(); loadEmployees(); document.getElementById('emp-name').value=''; document.getElementById('emp-phone').value=''; document.getElementById('emp-password').value=''; }
+  else showAlert('خطأ: '+(res.data?.message||JSON.stringify(res.data)),'error','emp-alert');
+}
+
+async function toggleEmployee(id, active) {
+  await sbFetch(`clinic_users?id=eq.${id}`,'PATCH',{is_active:active});
+  loadEmployees();
+}
+
+async function deleteEmployee(id, name) {
+  if(!confirm(`حذف موظف "${name}"؟`)) return;
+  await sbFetch(`clinic_users?id=eq.${id}`,'DELETE');
+  loadEmployees();
+}
+
+async function loadFinance() {
+  const clinicId=currentUser.clinic_id||currentUser.id;
+  const res=await sbFetch(`invoices?clinic_id=eq.${clinicId}&select=*&order=created_at.desc&limit=20`);
+  if(!res.ok||!res.data) return;
+  const today=new Date().toISOString().split('T')[0];
+  const thisMonth=today.slice(0,7);
+  const todayTotal=res.data.filter(i=>i.date===today).reduce((s,i)=>s+(i.total||0),0);
+  const monthTotal=res.data.filter(i=>i.date?.startsWith(thisMonth)).reduce((s,i)=>s+(i.total||0),0);
+  const allTotal=res.data.reduce((s,i)=>s+(i.total||0),0);
+  document.getElementById('fin-today').textContent=todayTotal.toLocaleString();
+  document.getElementById('fin-month').textContent=monthTotal.toLocaleString();
+  document.getElementById('fin-total').textContent=allTotal.toLocaleString();
+  const tbody=document.getElementById('finance-tbody');
+  if(!res.data.length) { tbody.innerHTML='<tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:24px;">لا توجد فواتير بعد</td></tr>'; return; }
+  tbody.innerHTML=res.data.map(i=>`<tr><td>${esc(i.patient_name)}</td><td>${esc(i.doctor_name||'—')}</td><td>${(i.total||0).toLocaleString()} د.ع</td><td>${i.date||'—'}</td><td><span class="badge ${i.status==='مدفوع'?'badge-green':i.status==='جزئي'?'badge-amber':'badge-red'}">${esc(i.status)}</span></td></tr>`).join('');
+}
+
+async function loadStats() {
+  const clinicId=currentUser.clinic_id||currentUser.id;
+  const [p,a]=await Promise.all([
+    sbFetch(`patients?clinic_id=eq.${clinicId}&select=id`),
+    sbFetch(`appointments?clinic_id=eq.${clinicId}&select=id`)
+  ]);
+  document.getElementById('stat-patients').textContent=p.data?.length||0;
+  document.getElementById('stat-appointments').textContent=a.data?.length||0;
+}
+
+// ===== تبويبات مدير العيادة =====
+function clinicTab(tab) {
+  document.querySelectorAll('#clinic-manager-screen .admin-tab-btn').forEach((b,i)=>b.classList.toggle('active',['employees','finance','stats'][i]===tab));
+  document.querySelectorAll('#clinic-manager-screen .admin-tab-content').forEach(c=>c.classList.remove('active'));
+  document.getElementById(`ctab-${tab}`)?.classList.add('active');
+  if(tab==='finance') loadFinance();
+  if(tab==='stats') loadStats();
+}
+
+// ===== لوحة المدير العام =====
+async function loadAdminData() {
+  showLoading('تحميل البيانات...');
+  const token = localStorage.getItem('session_token');
+  const res = await authHandlerCall('getAllClinics', { token });
+  hideLoading();
+  if(!res.ok || !res.data) {
+    // عرض رسالة خطأ واضحة بدل شاشة بيضاء
+    const tbody = document.getElementById('clinics-tbody');
+    if(tbody) tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:#ef4444;padding:24px;">⚠️ ${esc(res.error||'تعذّر تحميل البيانات')}</td></tr>`;
+    return;
+  }
+  allClinics = res.data;
+  renderClinicsTable(allClinics);
+  document.getElementById('stat-total').textContent=allClinics.length;
+  document.getElementById('stat-active').textContent=allClinics.filter(c=>c.status==='active').length;
+  document.getElementById('stat-trial').textContent=allClinics.filter(c=>c.plan==='trial').length;
+}
+
+function renderClinicsTable(list) {
+  const tbody=document.getElementById('clinics-tbody');
+  if(!list.length) { tbody.innerHTML='<tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:24px;">لا توجد عيادات</td></tr>'; return; }
+  const pNames={trial:'تجريبي',basic:'أساسية',medium:'مجمع صغير',large:'مجمع كبير',pending:'انتظار',expired:'منتهي'};
+  const sBadge={trial:'badge-amber',active:'badge-green',pending:'badge-blue',expired:'badge-red',suspended:'badge-red'};
+  tbody.innerHTML=list.map(c=>`<tr>
+    <td><strong>${esc(c.clinic_name)}</strong><br><span style="font-size:11px;color:var(--text-muted)">${esc(c.email||'')}</span></td>
+    <td>${esc(c.phone)}</td>
+    <td>${pNames[c.plan]||c.plan}</td>
+    <td><span class="badge ${sBadge[c.status]||'badge-gray'}">${c.status}</span></td>
+    <td>${c.expires_at?new Date(c.expires_at).toLocaleDateString('ar-IQ'):'—'}</td>
+    <td style="display:flex;gap:5px;flex-wrap:wrap;">
+      ${c.status!=='active'?`<button class="action-btn btn-activate" onclick="quickActivate('${c.id}')">تفعيل</button>`:''}
+      ${c.status==='active'?`<button class="action-btn btn-deactivate" onclick="quickDeactivate('${c.id}')">إيقاف</button>`:''}
+    </td>
+  </tr>`).join('');
+}
+
+function filterClinics(q) { renderClinicsTable(allClinics.filter(c=>c.clinic_name?.includes(q)||c.phone?.includes(q))); }
+
+function adminTab(tab) {
+  document.querySelectorAll('#admin-screen .admin-tab-btn').forEach((b,i)=>b.classList.toggle('active',['clinics','activate'][i]===tab));
+  document.querySelectorAll('#admin-screen .admin-tab-content').forEach(c=>c.classList.remove('active'));
+  document.getElementById(`tab-${tab}`)?.classList.add('active');
+}
+
+async function adminActivate() {
+  const phone=document.getElementById('act-phone').value.trim();
+  const plan=document.getElementById('act-plan').value;
+  const months=parseInt(document.getElementById('act-months').value);
+  if(!phone) return showAlert('أدخل رقم الهاتف','error','act-alert');
+  const fullPhone=normalizeIraqiPhone(phone);
+  if(!fullPhone) return showAlert('رقم هاتف غير صحيح','error','act-alert');
+  showLoading('تفعيل...');
+  const token = localStorage.getItem('session_token');
+  const res = await authHandlerCall('adminActivateClinic', { token, phone, plan, months });
+  hideLoading();
+  if(res.ok) { showAlert(`✅ تم التفعيل حتى ${new Date(res.expiresAt).toLocaleDateString('ar-IQ')}`,'success','act-alert'); loadAdminData(); }
+  else showAlert('فشل: '+(res.error||'خطأ غير معروف'),'error','act-alert');
+}
+
+async function quickActivate(id) {
+  showLoading('تفعيل...');
+  const token = localStorage.getItem('session_token');
+  const res = await authHandlerCall('adminSetClinicStatus', { token, clinicId:id, status:'active' });
+  hideLoading();
+  if(!res.ok) return showAlert('فشل: '+(res.error||'خطأ غير معروف'));
+  loadAdminData();
+}
+
+async function quickDeactivate(id) {
+  if(!confirm('إيقاف هذا الاشتراك؟')) return;
+  showLoading('إيقاف...');
+  const token = localStorage.getItem('session_token');
+  const res = await authHandlerCall('adminSetClinicStatus', { token, clinicId:id, status:'expired' });
+  hideLoading();
+  if(!res.ok) return showAlert('فشل: '+(res.error||'خطأ غير معروف'));
+  loadAdminData();
+}
+
+// === تمت إزالة زر/دالة "حذف العيادة" بشكل متعمد ===
+// لا يوجد بهذا النظام أي مسار يحذف عيادة أو بياناتها من Supabase. لإيقاف
+// عيادة، استخدم زر "إيقاف" (quickDeactivate) أعلاه — وهو تجميد كامل
+// (status='expired') لا يمسح أي بيانات، ويمكن التراجع عنه بزر "تفعيل" بأي وقت.
+
+function doLogout() { currentUser=null; localStorage.removeItem('clinic_user'); localStorage.removeItem('session_token'); showScreen('auth-screen'); switchTab('login'); }
+
+// ===== تشغيل عند الفتح =====
+async function init() {
+  showLoading();
+  const saved=localStorage.getItem('clinic_user');
+  if(saved) {
+    try {
+      currentUser=JSON.parse(saved);
+      if(currentUser.is_super_admin) {
+        hideLoading();
+        try {
+          showScreen('admin-screen');
+          loadAdminData();
+        } catch(err) {
+          console.error('خطأ في تحميل لوحة الأدمن:', err);
+          showScreen('auth-screen');
+        }
+        return;
+      }
+      // تحديث البيانات
+      const phone=currentUser.phone;
+      if(phone) {
+        const res=await sbFetch(`clinics_auth?phone=eq.${encodeURIComponent(phone)}&select=*`);
+        if(res.ok&&res.data?.length>0) { currentUser={...currentUser,...res.data[0]}; localStorage.setItem('clinic_user',JSON.stringify(currentUser)); }
+      }
+      hideLoading();
+      redirectAfterLogin();
+      return;
+    } catch(e) { localStorage.removeItem('clinic_user'); }
+  }
+  hideLoading();
+  showScreen('auth-screen');
+  applyURLParams();
+}
+
+init();
+</script>
+<script src="specialties.js"></script>
+</body>
+</html>
+
+<!-- ══════════════════════════════════════
+     PWA — Service Worker + Install Prompt
+══════════════════════════════════════ -->
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js')
+      .then(reg => console.log('[PWA] Service Worker registered:', reg.scope))
+      .catch(err => console.warn('[PWA] SW registration failed:', err));
+  });
+}
+
+let deferredPrompt = null;
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  const dismissed = localStorage.getItem('pwa_install_dismissed');
+  if (dismissed && (Date.now() - parseInt(dismissed)) < 3 * 24 * 60 * 60 * 1000) return;
+  showInstallBanner();
+});
+
+function showInstallBanner() {
+  if (document.getElementById('pwa-install-banner')) return;
+  const banner = document.createElement('div');
+  banner.id = 'pwa-install-banner';
+  banner.innerHTML = `
+    <div style="position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#fff;border-radius:16px;padding:14px 18px;box-shadow:0 8px 32px rgba(37,99,235,.25);border:1.5px solid #e2e8f0;display:flex;align-items:center;gap:12px;z-index:99999;font-family:'Tajawal',sans-serif;direction:rtl;max-width:340px;width:90%;animation:pwaSlide 0.4s ease;">
+      <img src="icons/icon-72x72.png" width="44" height="44" style="border-radius:10px;flex-shrink:0;" alt="">
+      <div style="flex:1;">
+        <div style="font-size:14px;font-weight:800;color:#0f172a;">ثبّت تطبيق دكتور بلس</div>
+        <div style="font-size:12px;color:#64748b;margin-top:2px;">على الشاشة الرئيسية بدون متجر</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0;">
+        <button onclick="installPWA()" style="background:#2563eb;color:#fff;border:none;border-radius:8px;padding:7px 14px;font-family:'Tajawal',sans-serif;font-size:13px;font-weight:700;cursor:pointer;">تثبيت</button>
+        <button onclick="dismissInstallBanner()" style="background:none;border:none;color:#64748b;font-size:11px;cursor:pointer;font-family:'Tajawal',sans-serif;">لاحقاً</button>
+      </div>
+    </div>
+    <style>@keyframes pwaSlide{from{opacity:0;transform:translateX(-50%) translateY(20px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}</style>
+  `;
+  document.body.appendChild(banner);
+}
+
+function installPWA() {
+  if (!deferredPrompt) return;
+  deferredPrompt.prompt();
+  deferredPrompt.userChoice.then(choice => {
+    deferredPrompt = null;
+    dismissInstallBanner();
+  });
+}
+
+function dismissInstallBanner() {
+  const b = document.getElementById('pwa-install-banner');
+  if (b) b.remove();
+  localStorage.setItem('pwa_install_dismissed', Date.now());
+}
+
+// iOS instructions
+if (/iphone|ipad|ipod/i.test(navigator.userAgent) && !window.MSStream && !window.matchMedia('(display-mode: standalone)').matches) {
+  const dismissed = localStorage.getItem('pwa_install_dismissed');
+  if (!dismissed || (Date.now() - parseInt(dismissed)) > 3 * 24 * 60 * 60 * 1000) {
+    setTimeout(() => {
+      if (document.getElementById('pwa-install-banner')) return;
+      const b = document.createElement('div');
+      b.id = 'pwa-install-banner';
+      b.innerHTML = `
+        <div style="position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#fff;border-radius:16px;padding:16px 18px;box-shadow:0 8px 32px rgba(37,99,235,.25);border:1.5px solid #e2e8f0;z-index:99999;font-family:'Tajawal',sans-serif;direction:rtl;max-width:320px;width:90%;text-align:center;animation:pwaSlide 0.4s ease;">
+          <img src="icons/icon-72x72.png" width="52" height="52" style="border-radius:12px;margin-bottom:10px;" alt="">
+          <div style="font-size:14px;font-weight:800;color:#0f172a;margin-bottom:6px;">ثبّت تطبيق دكتور بلس</div>
+          <div style="font-size:12px;color:#64748b;line-height:1.7;margin-bottom:12px;">اضغط <strong>↑ مشاركة</strong> في أسفل Safari<br>ثم اختر <strong>"Add to Home Screen"</strong></div>
+          <button onclick="dismissInstallBanner()" style="background:#2563eb;color:#fff;border:none;border-radius:8px;padding:9px 20px;font-family:'Tajawal',sans-serif;font-size:13px;font-weight:700;cursor:pointer;width:100%;">فهمت ✓</button>
+        </div>
+      `;
+      document.body.appendChild(b);
+    }, 3000);
+  }
+}
+
+// Update notification
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    const t = document.createElement('div');
+    t.innerHTML = `<div style="position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#0f172a;color:#fff;border-radius:12px;padding:12px 20px;font-family:'Tajawal',sans-serif;font-size:13px;font-weight:700;z-index:99999;display:flex;gap:10px;align-items:center;box-shadow:0 4px 20px rgba(0,0,0,.3);direction:rtl;">🔄 يوجد تحديث جديد <button onclick="location.reload()" style="background:#2563eb;border:none;color:#fff;border-radius:7px;padding:5px 12px;cursor:pointer;font-family:'Tajawal',sans-serif;font-size:12px;font-weight:700;">تحديث الآن</button></div>`;
+    document.body.appendChild(t);
+  });
+}
+</script>
