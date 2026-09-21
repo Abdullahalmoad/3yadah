@@ -1,0 +1,64 @@
+name: Site QA
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+  schedule:
+    - cron: '0 5 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  qa:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install browsers (Chromium + WebKit/Safari)
+        run: |
+          pip install playwright
+          playwright install --with-deps chromium webkit
+
+      - name: Run QA
+        run: python qa.py
+        env:
+          QA_ACCOUNTS: ${{ secrets.QA_ACCOUNTS }}
+
+      - name: Upload screenshots and report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: qa-report
+          path: qa-out
+          if-no-files-found: ignore
+
+      - name: Email me (via GitHub issue) when there are warnings or failures
+        if: always() && github.event_name != 'pull_request'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          [ -f qa-out/report.md ] || exit 0
+          if grep -qE "❌ مشاكل|⚠️ تحذيرات" qa-out/report.md; then
+            {
+              echo "@${{ github.repository_owner }}"
+              echo
+              cat qa-out/report.md
+              echo
+              echo "[تفاصيل التشغيل واللقطات](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})"
+            } > body.md
+            NUM=$(gh issue list --state open --search "QA report in:title" --json number --jq '.[0].number')
+            if [ -n "$NUM" ]; then
+              gh issue comment "$NUM" --body-file body.md
+            else
+              gh issue create --title "QA report: issues found" --body-file body.md
+            fi
+          fi
