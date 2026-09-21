@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="دكتور بلس">
 <meta name="theme-color" content="#2563eb">
-<link rel="apple-touch-icon" href="icons/icon-152x152.png">
+<link rel="apple-touch-icon" href="icon-152x152.png">
 <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 <title>Doctor Plus — نظام إدارة العيادات</title>
 <style>
@@ -5688,6 +5688,17 @@ document.addEventListener('click', function(e) {
   const SUPABASE_URL = 'https://aloozrrswipwtzmghrku.supabase.co';
   const SUPABASE_KEY = 'sb_publishable_-81NXYyjUAqRSnmiTA_IGA_T5fHPe92';
 
+  // حالة الاشتراك تُجلب عبر Edge Function (clinic-status) — لا اتصال مباشر بقاعدة البيانات
+  function fetchClinicStatus() {
+    const token = localStorage.getItem('session_token');
+    if (!token) return Promise.resolve([]);
+    return fetch(SUPABASE_URL + '/functions/v1/clinic-status', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + SUPABASE_KEY, 'apikey': SUPABASE_KEY },
+      body: JSON.stringify({ token })
+    }).then(r => r.json()).then(j => (j && j.ok && j.data) ? [j.data] : []);
+  }
+
   const saved = localStorage.getItem('clinic_user');
   if (!saved) {
     // غير مسجل دخول — وجّهه لصفحة التسجيل
@@ -5712,9 +5723,7 @@ document.addEventListener('click', function(e) {
     const exp = new Date(user.expires_at);
     if (now > exp) {
       // تحذير انتهاء التجريبي وحذف البيانات
-      fetch(`${SUPABASE_URL}/rest/v1/clinics_auth?phone=eq.${encodeURIComponent(user.phone)}&select=status`, {
-        headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
-      }).then(r => r.json()).then(data => {
+      fetchClinicStatus().then(data => {
         if (data?.[0]?.status !== 'active') {
           localStorage.removeItem('clinic_user');
           window.location.href = 'auth-system-3-1-1.html?expired=trial';
@@ -5757,9 +5766,7 @@ document.addEventListener('click', function(e) {
   }
 
   // التحقق المباشر من قاعدة البيانات (للتأكد لم يُلغى الاشتراك)
-  fetch(`${SUPABASE_URL}/rest/v1/clinics_auth?phone=eq.${encodeURIComponent(user.phone)}&select=status,expires_at,plan`, {
-    headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
-  }).then(r => r.json()).then(data => {
+  fetchClinicStatus().then(data => {
     const fresh = data?.[0];
     if (!fresh) return;
     if (fresh.status === 'expired' || fresh.status === 'pending') {

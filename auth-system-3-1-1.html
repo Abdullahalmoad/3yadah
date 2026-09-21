@@ -13,15 +13,15 @@
 <meta name="apple-mobile-web-app-title" content="دكتور بلس">
 <meta name="theme-color" content="#2563eb">
 <meta name="msapplication-TileColor" content="#2563eb">
-<meta name="msapplication-TileImage" content="icons/icon-144x144.png">
+<meta name="msapplication-TileImage" content="icon-144x144.png">
 
 <!-- PWA Icons -->
-<link rel="icon" type="image/png" sizes="32x32" href="icons/icon-96x96.png">
-<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192x192.png">
-<link rel="apple-touch-icon" href="icons/icon-152x152.png">
-<link rel="apple-touch-icon" sizes="152x152" href="icons/icon-152x152.png">
-<link rel="apple-touch-icon" sizes="192x192" href="icons/icon-192x192.png">
-<link rel="apple-touch-icon" sizes="512x512" href="icons/icon-512x512.png">
+<link rel="icon" type="image/png" sizes="32x32" href="icon-96x96.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192x192.png">
+<link rel="apple-touch-icon" href="icon-152x152.png">
+<link rel="apple-touch-icon" sizes="152x152" href="icon-152x152.png">
+<link rel="apple-touch-icon" sizes="192x192" href="icon-192x192.png">
+<link rel="apple-touch-icon" sizes="512x512" href="icon-512x512.png">
 
 <!-- Apple Splash Screens -->
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -1258,8 +1258,13 @@ async function init() {
       // تحديث البيانات
       const phone=currentUser.phone;
       if(phone) {
-        const res=await sbFetch(`clinics_auth?phone=eq.${encodeURIComponent(phone)}&select=*`);
-        if(res.ok&&res.data?.length>0) { currentUser={...currentUser,...res.data[0]}; localStorage.setItem('clinic_user',JSON.stringify(currentUser)); }
+        const tk=localStorage.getItem('session_token');
+        if(tk) {
+          try {
+            const r=await fetch(SUPABASE_URL+'/functions/v1/clinic-status',{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${SUPABASE_KEY}`,'apikey':SUPABASE_KEY},body:JSON.stringify({token:tk})}).then(x=>x.json());
+            if(r&&r.ok&&r.data) { currentUser={...currentUser,...r.data}; localStorage.setItem('clinic_user',JSON.stringify(currentUser)); }
+          } catch(e) {}
+        }
       }
       hideLoading();
       redirectAfterLogin();
@@ -1304,7 +1309,7 @@ function showInstallBanner() {
   banner.id = 'pwa-install-banner';
   banner.innerHTML = `
     <div style="position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#fff;border-radius:16px;padding:14px 18px;box-shadow:0 8px 32px rgba(37,99,235,.25);border:1.5px solid #e2e8f0;display:flex;align-items:center;gap:12px;z-index:99999;font-family:'Tajawal',sans-serif;direction:rtl;max-width:340px;width:90%;animation:pwaSlide 0.4s ease;">
-      <img src="icons/icon-72x72.png" width="44" height="44" style="border-radius:10px;flex-shrink:0;" alt="">
+      <img src="icon-72x72.png" width="44" height="44" style="border-radius:10px;flex-shrink:0;" alt="">
       <div style="flex:1;">
         <div style="font-size:14px;font-weight:800;color:#0f172a;">ثبّت تطبيق دكتور بلس</div>
         <div style="font-size:12px;color:#64748b;margin-top:2px;">على الشاشة الرئيسية بدون متجر</div>
@@ -1344,7 +1349,7 @@ if (/iphone|ipad|ipod/i.test(navigator.userAgent) && !window.MSStream && !window
       b.id = 'pwa-install-banner';
       b.innerHTML = `
         <div style="position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#fff;border-radius:16px;padding:16px 18px;box-shadow:0 8px 32px rgba(37,99,235,.25);border:1.5px solid #e2e8f0;z-index:99999;font-family:'Tajawal',sans-serif;direction:rtl;max-width:320px;width:90%;text-align:center;animation:pwaSlide 0.4s ease;">
-          <img src="icons/icon-72x72.png" width="52" height="52" style="border-radius:12px;margin-bottom:10px;" alt="">
+          <img src="icon-72x72.png" width="52" height="52" style="border-radius:12px;margin-bottom:10px;" alt="">
           <div style="font-size:14px;font-weight:800;color:#0f172a;margin-bottom:6px;">ثبّت تطبيق دكتور بلس</div>
           <div style="font-size:12px;color:#64748b;line-height:1.7;margin-bottom:12px;">اضغط <strong>↑ مشاركة</strong> في أسفل Safari<br>ثم اختر <strong>"Add to Home Screen"</strong></div>
           <button onclick="dismissInstallBanner()" style="background:#2563eb;color:#fff;border:none;border-radius:8px;padding:9px 20px;font-family:'Tajawal',sans-serif;font-size:13px;font-weight:700;cursor:pointer;width:100%;">فهمت ✓</button>
