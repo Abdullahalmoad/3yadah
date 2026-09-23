@@ -1,5 +1,5 @@
 // Doctor Plus PWA — Service Worker
-const CACHE_VERSION = 'doctorplus-v2.1.0';
+const CACHE_VERSION = 'doctorplus-v2.1.1';
 
 const CORE_ASSETS = [
   './index.html',
