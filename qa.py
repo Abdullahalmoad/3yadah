@@ -716,7 +716,7 @@ def register_trial_owner(page, base, tag):
     نحن يدوياً بنهاية هذا التشغيل عبر cleanup_qa_data — بس فقط لو التشغيل نجح
     بالكامل بدون أي FAIL."""
     seed = _qa_seed()
-    phone = f"07{seed % 100000000:08d}"
+    phone = f"07{seed % 1000000000:09d}"
     email = f"{QA_TAG}.{tag}.{seed}@example.com"
     clinic = f"{QA_TAG}-{tag}-{seed}"
     page.goto(f"{base}/auth-system-3-1-1.html", wait_until="load")
@@ -826,7 +826,7 @@ def check_otp_bypass(page, base):
 
 def add_employee(page, role, tag):
     seed = _qa_seed()
-    phone = f"07{seed % 100000000:08d}"
+    phone = f"07{seed % 1000000000:09d}"
     name = f"{QA_TAG} {role} {seed}"
     page.evaluate(f"openAddEmployee('{role}')")
     page.fill("#ae-full-name", name)
