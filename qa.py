@@ -828,6 +828,7 @@ def add_employee(page, role, tag):
     seed = _qa_seed()
     phone = f"07{seed % 1000000000:09d}"
     name = f"{QA_TAG} {role} {seed}"
+    page.evaluate(TOAST_HOOK)
     page.evaluate(f"openAddEmployee('{role}')")
     page.fill("#ae-full-name", name)
     page.fill("#ae-phone", phone)
@@ -838,12 +839,25 @@ def add_employee(page, role, tag):
         return None
     page.fill("#ae-password", QA_PASSWORD)
     page.click("#modal-add-employee button.btn-primary")
+    # النجاح يسكّر المودال ويطلع توست عائم (بدون رسالة بعنصر add-employee-alert)،
+    # فنتحقق من الاثنين معاً: التوست (نجاح) أو عنصر التنبيه (فشل).
+    ok = False
+    alert_text = ""
     try:
-        page.wait_for_selector("#add-employee-alert:visible", timeout=8000)
-        alert_text = page.inner_text("#add-employee-alert")
+        page.wait_for_function(
+            "window.__toasts && window.__toasts.length > 0", timeout=8000
+        )
+        toasts = page.evaluate("window.__toasts || []")
+        ok = any("✅" in t[0] or "بنجاح" in t[0] for t in toasts)
+        if not ok and toasts:
+            alert_text = toasts[-1][0]
     except Exception:
-        alert_text = ""
-    if "✅" in alert_text or "بنجاح" in alert_text:
+        try:
+            page.wait_for_selector("#add-employee-alert:visible", timeout=2000)
+            alert_text = page.inner_text("#add-employee-alert")
+        except Exception:
+            alert_text = ""
+    if ok or "✅" in alert_text or "بنجاح" in alert_text:
         rec("PASS", "إضافة موظف", f"إضافة {role} نجحت", name)
         return {"phone": phone, "password": QA_PASSWORD}
     rec("FAIL", "إضافة موظف", f"فشل إضافة {role}", alert_text[:150] or "لا رسالة")
