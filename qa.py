@@ -998,8 +998,7 @@ def phase_role_pipeline(pw, base):
 
     fails_before_trial = sum(1 for r in RESULTS if r[0] == "FAIL")
     owner = register_trial_owner(page, base, "trial")
-    if owner:
-        page.wait_for_timeout(1500)
+        page.wait_for_timeout(4000)
         for role in ("secretary", "pharmacist"):  # المشمولة بالباقة التجريبية (الدكتور نفسه هو المالك، والنظام يمنع إضافة دكتور ثاني)
             creds = add_employee(page, role, "trial")
             if creds:
