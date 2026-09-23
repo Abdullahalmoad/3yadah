@@ -676,16 +676,17 @@ def phase_logged_in(pw, base):
 # ============================================================
 QA_TAG = os.getenv("QA_TAG", "zzqa")            # بادئة لتمييز بيانات الفحص عن بيانات حقيقية
 QA_LAB_ACCOUNT = os.getenv("QA_LAB_ACCOUNT", "")  # "07xxxxxxxx:password" — حساب دائم بباقة "كبير" لفحص المختبر
+QA_SERVICE_ROLE_KEY = os.getenv("QA_SERVICE_ROLE_KEY", "")  # مفتاح service_role — لحذف عيادة الفحص عند نجاح كامل فقط
 QA_PASSWORD = "QaTest#" + os.getenv("GITHUB_RUN_ID", "12345")[-5:]
 
 EMAILJS_STUB = """
-() => {
+(() => {
   window.__qa_otp = null;
   window.emailjs = {
     init: () => {},
     send: (svc, tpl, params) => { window.__qa_otp = params && params.passcode; return Promise.resolve({status:200,text:'OK'}); }
   };
-}
+})();
 """
 
 
@@ -710,8 +711,10 @@ def _fill_step3(page, clinic, full_name, phone, email, password):
 
 
 def register_trial_owner(page, base, tag):
-    """يسجّل عيادة بباقة (تجريبي) — تُحذف بياناتها تلقائياً بعد 14 يوم — وتشمل
-    دكتور+سكرتير+صيدلاني، وهي الأنسب للفحص المتكرر لأنها لا تراكم بيانات دائمة."""
+    """يسجّل عيادة بباقة (تجريبي) — تشمل دكتور+سكرتير+صيدلاني. تنبيه: النظام لا
+    يحذف بيانات التجربة تلقائياً (دالة الحذف أُزيلت من الكود عمداً)، لذا نحذفها
+    نحن يدوياً بنهاية هذا التشغيل عبر cleanup_qa_data — بس فقط لو التشغيل نجح
+    بالكامل بدون أي FAIL."""
     seed = _qa_seed()
     phone = f"07{seed % 100000000:08d}"
     email = f"{QA_TAG}.{tag}.{seed}@example.com"
@@ -742,7 +745,40 @@ def register_trial_owner(page, base, tag):
         rec("FAIL", "محاكاة التسجيل", "فشل إكمال التسجيل بعد التحقق", alert or clinic)
         return None
     rec("PASS", "محاكاة التسجيل", "تسجيل عيادة تجريبية + تحقق OTP نجح", clinic)
-    return {"phone": phone, "password": QA_PASSWORD, "clinic": clinic}
+    clinic_user = page.evaluate("JSON.parse(localStorage.getItem('clinic_user')||'{}')")
+    clinic_id = clinic_user.get("clinic_id") or clinic_user.get("id")
+    return {"phone": phone, "password": QA_PASSWORD, "clinic": clinic, "clinic_id": clinic_id}
+
+
+def cleanup_qa_data(page, clinic_id):
+    """يحذف عيادة الفحص وموظفيها نهائياً — يُستدعى فقط إذا نجح التشغيل بالكامل.
+    يحتاج Secret باسم QA_SERVICE_ROLE_KEY (مفتاح service_role من إعدادات Supabase
+    API). بدونه تبقى بيانات العيادة موجودة وتحتاج حذفاً يدوياً."""
+    if not clinic_id:
+        return
+    if not QA_SERVICE_ROLE_KEY:
+        rec("SKIP", "تنظيف بيانات QA", "أضف Secret باسم QA_SERVICE_ROLE_KEY لتفعيل الحذف التلقائي عند النجاح",
+            clinic_id)
+        return
+    result = page.evaluate(
+        """
+        async ({url, key, id}) => {
+          const h = {apikey:key, Authorization:'Bearer '+key, 'Content-Type':'application/json'};
+          const del = (table) => fetch(url+'/rest/v1/'+table+'?clinic_id=eq.'+id, {method:'DELETE', headers:h}).then(r=>r.status);
+          const statuses = {};
+          for (const t of ['financial_transactions','invoices','prescriptions','appointments','patients','clinic_users']) {
+            statuses[t] = await del(t);
+          }
+          statuses['clinics_auth'] = await fetch(url+'/rest/v1/clinics_auth?id=eq.'+id, {method:'DELETE', headers:h}).then(r=>r.status);
+          return statuses;
+        }
+        """,
+        {"url": SUPABASE_URL, "key": QA_SERVICE_ROLE_KEY, "id": clinic_id},
+    )
+    if result.get("clinics_auth", 0) < 300:
+        rec("PASS", "تنظيف بيانات QA", "حُذفت عيادة الفحص وكل سجلاتها بعد نجاح كامل للتشغيل", clinic_id)
+    else:
+        rec("WARN", "تنظيف بيانات QA", "فشل حذف عيادة الفحص — راجعها يدوياً", f"{clinic_id} :: {result}")
 
 
 def check_otp_bypass(page, base):
@@ -803,6 +839,74 @@ def add_employee(page, role, tag):
         return {"phone": phone, "password": QA_PASSWORD}
     rec("FAIL", "إضافة موظف", f"فشل إضافة {role}", alert_text[:150] or "لا رسالة")
     return None
+
+
+def create_clinical_records(page, tag):
+    """يضيف مريضاً حقيقياً + موعداً + وصفة + فاتورة عبر نفس دوال الحفظ الفعلية
+    بالتطبيق (savePatient/saveAppointment/savePrescription/saveInvoice) —
+    بحساب الدكتور فقط، لأن السكرتير/الصيدلاني يحتاجون ربطاً مسبقاً بدكتور
+    غير متوفر تلقائياً بحساب فحص جديد."""
+    label = f"{tag}/سجلات سريرية"
+    seed = _qa_seed()
+
+    try:
+        page.evaluate("() => { window.__toasts = []; openModal('modal-patient'); "
+                       "if (typeof populatePatientDoctorSelect==='function') populatePatientDoctorSelect(); }")
+        page.fill("#pat-name", f"{QA_TAG} مريض {seed}")
+        page.fill("#pat-dob", "1990-01-01")
+        page.fill("#pat-phone", f"07{seed % 100000000:08d}")
+        page.evaluate("savePatient()")
+        page.wait_for_timeout(1500)
+        ok = any("✅" in t[0] for t in page.evaluate("window.__toasts || []"))
+        rec("PASS" if ok else "WARN", label, "إضافة مريض" + (" نجحت" if ok else " — ما ظهرت رسالة نجاح"))
+    except Exception as e:  # noqa
+        rec("FAIL", label, "فشل إضافة مريض", str(e)[:150])
+
+    try:
+        page.evaluate("() => { window.__toasts = []; openModal('modal-appt'); "
+                       "if (typeof populateApptDoctorSelect==='function') populateApptDoctorSelect(); }")
+        page.fill("#appt-patient-name", f"{QA_TAG} موعد {seed}")
+        page.fill("#appt-phone", f"07{seed % 100000000:08d}")
+        page.fill("#appt-date", "2027-01-01")
+        page.fill("#appt-time", "10:00")
+        page.evaluate("saveAppointment()")
+        page.wait_for_timeout(1500)
+        ok = any("✅" in t[0] for t in page.evaluate("window.__toasts || []"))
+        rec("PASS" if ok else "WARN", label, "إضافة موعد" + (" نجحت" if ok else " — ما ظهرت رسالة نجاح"))
+    except Exception as e:  # noqa
+        rec("FAIL", label, "فشل إضافة موعد", str(e)[:150])
+
+    try:
+        page.evaluate("() => { window.__toasts = []; openModal('modal-rx'); }")
+        page.wait_for_timeout(800)
+        if page.evaluate("(document.getElementById('rx-patient-select')?.options.length||0) > 0"):
+            page.select_option("#rx-patient-select", index=0)
+            page.evaluate("addDrug()")
+            page.fill(".drug-name", "دواء فحص QA")
+            page.fill(".drug-dose", "حبة واحدة")
+            page.evaluate("savePrescription()")
+            page.wait_for_timeout(1500)
+            ok = any("✅" in t[0] for t in page.evaluate("window.__toasts || []"))
+            rec("PASS" if ok else "WARN", label, "إضافة وصفة" + (" نجحت" if ok else " — ما ظهرت رسالة نجاح"))
+        else:
+            rec("WARN", label, "لا يوجد مريض بالقائمة لإضافة وصفة له")
+    except Exception as e:  # noqa
+        rec("FAIL", label, "فشل إضافة وصفة", str(e)[:150])
+
+    try:
+        page.evaluate("() => { window.__toasts = []; openModal('modal-invoice'); "
+                       "if (typeof populateInvoiceServices==='function') populateInvoiceServices(); }")
+        page.wait_for_timeout(800)
+        if page.evaluate("(document.getElementById('invoice-patient-select')?.options.length||0) > 0"):
+            page.select_option("#invoice-patient-select", index=0)
+            page.evaluate("saveInvoice()")
+            page.wait_for_timeout(1500)
+            ok = any("✅" in t[0] for t in page.evaluate("window.__toasts || []"))
+            rec("PASS" if ok else "WARN", label, "إضافة فاتورة" + (" نجحت" if ok else " — ما ظهرت رسالة نجاح"))
+        else:
+            rec("WARN", label, "لا يوجد مريض بالقائمة لإضافة فاتورة له")
+    except Exception as e:  # noqa
+        rec("FAIL", label, "فشل إضافة فاتورة", str(e)[:150])
 
 
 def exercise_role(pw_ctx, base, role, creds, tag):
@@ -867,6 +971,8 @@ def exercise_role(pw_ctx, base, role, creds, tag):
             rec("WARN", f"{label_login}/nav#{i}", "تعذر فتح القسم", str(e)[:100])
     if visited == 0:
         rec("WARN", label_login, "لم يظهر أي قسم بالقائمة لهذا الدور — تأكد أن هذا متوقع")
+    if role == "doctor":
+        create_clinical_records(page, tag)
     page.close()
 
 
@@ -881,6 +987,7 @@ def phase_role_pipeline(pw, base):
 
     check_otp_bypass(page, base)
 
+    fails_before_trial = sum(1 for r in RESULTS if r[0] == "FAIL")
     owner = register_trial_owner(page, base, "trial")
     if owner:
         page.wait_for_timeout(1500)
@@ -889,8 +996,14 @@ def phase_role_pipeline(pw, base):
             if creds:
                 exercise_role(ctx, base, role, creds, "trial")
             page.bring_to_front()
+        fails_after_trial = sum(1 for r in RESULTS if r[0] == "FAIL")
+        if fails_after_trial == fails_before_trial:
+            cleanup_qa_data(page, owner.get("clinic_id"))
+        else:
+            rec("WARN", "تنظيف بيانات QA", "صارت مشكلة بهذا التشغيل، تُركت عيادة الفحص بدون حذف للمراجعة",
+                owner.get("clinic_id"))
 
-    # المختبر متاح فقط بباقة "مجمع كبير"، وهذه الباقة لا تُحذف بياناتها تلقائياً،
+    # المختبر متاح فقط بباقة "مجمع كبير". لا نحذف حساب QA_LAB_ACCOUNT الدائم إطلاقاً —
     # لذا نعتمد على حساب دائم مُجهّز يدوياً بدل إنشاء واحد جديد بكل تشغيل.
     if QA_LAB_ACCOUNT and ":" in QA_LAB_ACCOUNT:
         lab_phone, lab_pwd = QA_LAB_ACCOUNT.split(":", 1)
