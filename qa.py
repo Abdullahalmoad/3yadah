@@ -729,7 +729,12 @@ def register_trial_owner(page, base, tag):
     try:
         page.wait_for_function("window.__qa_otp !== null", timeout=15000)
     except Exception:
-        rec("FAIL", "محاكاة التسجيل", "لم يصل رمز OTP (تحقق من emailjs)", clinic)
+        alert = ""
+        try:
+            alert = page.inner_text(".alert, #auth-alert", timeout=1500)[:150]
+        except Exception:
+            pass
+        rec("FAIL", "محاكاة التسجيل", "لم يصل رمز OTP (تحقق من emailjs)", alert or clinic)
         return None
     otp = page.evaluate("window.__qa_otp")
     page.fill("#otp-single", otp)
@@ -1069,3 +1074,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
