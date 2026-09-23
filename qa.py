@@ -940,7 +940,10 @@ def exercise_role(pw_ctx, base, role, creds, tag):
     page.goto(f"{base}/auth-system-3-1-1.html", wait_until="load")
     page.fill("#login-identifier", creds["phone"])
     page.fill("#login-password", creds["password"])
-    page.evaluate("doLogin()")
+    try:
+        page.evaluate("doLogin()")
+    except Exception:
+        pass  # doLogin() قد يسوي navigation فوري ويكسر الـ execution context — طبيعي، النجاح الفعلي نتحقق منه تحت بـ wait_for_url
     label_login = f"{tag}/{role}"
     try:
         page.wait_for_url("**/dashboard.html*", timeout=20000)
@@ -1092,4 +1095,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
