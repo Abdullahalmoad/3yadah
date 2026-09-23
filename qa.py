@@ -831,7 +831,11 @@ def add_employee(page, role, tag):
     page.evaluate(f"openAddEmployee('{role}')")
     page.fill("#ae-full-name", name)
     page.fill("#ae-phone", phone)
-    page.select_option("#ae-role", role)
+    try:
+        page.select_option("#ae-role", role, timeout=5000)
+    except Exception as e:  # noqa
+        rec("FAIL", "إضافة موظف", f"دور {role} غير متاح بقائمة الإضافة", str(e)[:150])
+        return None
     page.fill("#ae-password", QA_PASSWORD)
     page.click("#modal-add-employee button.btn-primary")
     try:
@@ -996,7 +1000,7 @@ def phase_role_pipeline(pw, base):
     owner = register_trial_owner(page, base, "trial")
     if owner:
         page.wait_for_timeout(1500)
-        for role in ("doctor", "secretary", "pharmacist"):  # المشمولة بالباقة التجريبية
+        for role in ("secretary", "pharmacist"):  # المشمولة بالباقة التجريبية (الدكتور نفسه هو المالك، والنظام يمنع إضافة دكتور ثاني)
             creds = add_employee(page, role, "trial")
             if creds:
                 exercise_role(ctx, base, role, creds, "trial")
