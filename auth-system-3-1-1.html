@@ -1184,6 +1184,7 @@ function renderClinicsTable(list) {
     <td style="display:flex;gap:5px;flex-wrap:wrap;">
       ${c.status!=='active'?`<button class="action-btn btn-activate" onclick="quickActivate('${c.id}')">تفعيل</button>`:''}
       ${c.status==='active'?`<button class="action-btn btn-deactivate" onclick="quickDeactivate('${c.id}')">إيقاف</button>`:''}
+      <button class="action-btn btn-deactivate" style="background:#c0392b" onclick="quickDelete('${c.id}','${esc(c.clinic_name).replace(/'/g,"\\'")}')">حذف</button>
     </td>
   </tr>`).join('');
 }
@@ -1227,6 +1228,16 @@ async function quickDeactivate(id) {
   const res = await authHandlerCall('adminSetClinicStatus', { token, clinicId:id, status:'expired' });
   hideLoading();
   if(!res.ok) return showAlert('فشل: '+(res.error||'خطأ غير معروف'));
+  loadAdminData();
+}
+
+async function quickDelete(id, name) {
+  if(!confirm(`حذف عيادة "${name}" نهائياً؟ هذا الإجراء لا يمكن التراجع عنه — سيُحذف كل شي (مرضى، مواعيد، فواتير، موظفين).`)) return;
+  showLoading('حذف...');
+  const token = localStorage.getItem('session_token');
+  const res = await authHandlerCall('adminDeleteClinic', { token, clinicId:id });
+  hideLoading();
+  if(!res.ok) return showAlert('فشل الحذف: '+(res.error||'خطأ غير معروف'));
   loadAdminData();
 }
 
