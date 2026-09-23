@@ -670,6 +670,251 @@ def phase_logged_in(pw, base):
     browser.close()
 
 
+# ============================================================
+# محاكاة كاملة: تسجيل عيادة + إضافة موظف من كل دور + تجربة ميزاته
+# + فحص ثغرة تجاوز رمز OTP (تسجيل بدون تحقق فعلي من البريد)
+# ============================================================
+QA_TAG = os.getenv("QA_TAG", "zzqa")            # بادئة لتمييز بيانات الفحص عن بيانات حقيقية
+QA_LAB_ACCOUNT = os.getenv("QA_LAB_ACCOUNT", "")  # "07xxxxxxxx:password" — حساب دائم بباقة "كبير" لفحص المختبر
+QA_PASSWORD = "QaTest#" + os.getenv("GITHUB_RUN_ID", "12345")[-5:]
+
+EMAILJS_STUB = """
+() => {
+  window.__qa_otp = null;
+  window.emailjs = {
+    init: () => {},
+    send: (svc, tpl, params) => { window.__qa_otp = params && params.passcode; return Promise.resolve({status:200,text:'OK'}); }
+  };
+}
+"""
+
+
+def _qa_seed():
+    import time
+    return int(time.time() * 1000) % 100000000
+
+
+def stub_emailjs(ctx):
+    """يمنع أي إرسال بريد فعلي أثناء الفحص (نتيجته ستذهب لبريد حقيقي غير مرغوب) ويلتقط
+    رمز الـ OTP من نفس الصفحة بدل انتظار بريد."""
+    ctx.route(re.compile(r"emailjs"), lambda route: route.abort())
+    ctx.add_init_script(EMAILJS_STUB)
+
+
+def _fill_step3(page, clinic, full_name, phone, email, password):
+    page.fill("#reg-clinic-name", clinic)
+    page.fill("#reg-full-name", full_name)
+    page.fill("#reg-phone", phone)
+    page.fill("#reg-email", email)
+    page.fill("#reg-password", password)
+
+
+def register_trial_owner(page, base, tag):
+    """يسجّل عيادة بباقة (تجريبي) — تُحذف بياناتها تلقائياً بعد 14 يوم — وتشمل
+    دكتور+سكرتير+صيدلاني، وهي الأنسب للفحص المتكرر لأنها لا تراكم بيانات دائمة."""
+    seed = _qa_seed()
+    phone = f"07{seed % 100000000:08d}"
+    email = f"{QA_TAG}.{tag}.{seed}@example.com"
+    clinic = f"{QA_TAG}-{tag}-{seed}"
+    page.goto(f"{base}/auth-system-3-1-1.html", wait_until="load")
+    page.evaluate(f"switchTab('register')")
+    page.evaluate("selectPlan('trial')")
+    page.click("text=التالي ←")
+    _fill_step3(page, clinic, f"{QA_TAG} owner", phone, email, QA_PASSWORD)
+    page.evaluate("window.__qa_otp = null")
+    page.click("text=إرسال رمز التحقق ←")
+    try:
+        page.wait_for_function("window.__qa_otp !== null", timeout=15000)
+    except Exception:
+        rec("FAIL", "محاكاة التسجيل", "لم يصل رمز OTP (تحقق من emailjs)", clinic)
+        return None
+    otp = page.evaluate("window.__qa_otp")
+    page.fill("#otp-single", otp)
+    page.click("text=تحقق والمتابعة ←")
+    try:
+        page.wait_for_url("**/dashboard.html*", timeout=20000)
+    except Exception:
+        alert = ""
+        try:
+            alert = page.inner_text(".alert, #auth-alert", timeout=1500)[:150]
+        except Exception:
+            pass
+        rec("FAIL", "محاكاة التسجيل", "فشل إكمال التسجيل بعد التحقق", alert or clinic)
+        return None
+    rec("PASS", "محاكاة التسجيل", "تسجيل عيادة تجريبية + تحقق OTP نجح", clinic)
+    return {"phone": phone, "password": QA_PASSWORD, "clinic": clinic}
+
+
+def check_otp_bypass(page, base):
+    """فحص أمني: يحاول إنشاء حساب عبر استدعاء register مباشرة بدون أي دليل على
+    التحقق من OTP. إذا نجح السيرفر بإنشاء الحساب، فهذه ثغرة حقيقية (راجع
+    generateAndSendOTP/verifyOTP بملف auth-system — التحقق يصير بالمتصفح فقط)."""
+    seed = _qa_seed()
+    phone = f"07{(seed + 1) % 100000000:08d}"
+    email = f"{QA_TAG}.otpbypass.{seed}@example.com"
+    page.goto(f"{base}/auth-system-3-1-1.html", wait_until="load")
+    result = page.evaluate(
+        """
+        async ({url, key, clinic, phone, email, password}) => {
+          const res = await fetch(url + '/functions/v1/auth-handler', {
+            method: 'POST',
+            headers: {'Content-Type':'application/json','Authorization':'Bearer '+key,'apikey':key},
+            body: JSON.stringify({action:'register', payload:{
+              clinicName: clinic, fullName: 'QA Bypass', phone, email, password,
+              plan: 'trial', role: 'doctor', status: 'trial'
+            }})
+          });
+          return { status: res.status, body: await res.text() };
+        }
+        """,
+        {"url": SUPABASE_URL, "key": ANON_KEY, "clinic": f"{QA_TAG}-otpbypass-{seed}",
+         "phone": phone, "email": email, "password": QA_PASSWORD},
+    )
+    try:
+        ok = json.loads(result["body"]).get("ok")
+    except Exception:
+        ok = None
+    if ok:
+        rec("FAIL", "أمان OTP", "السيرفر أنشأ حساباً بدون أي تحقق من رمز OTP — ثغرة تجاوز التحقق",
+            f"HTTP {result['status']}")
+    elif ok is False:
+        rec("PASS", "أمان OTP", "السيرفر رفض التسجيل بدون دليل تحقق من OTP")
+    else:
+        rec("WARN", "أمان OTP", "رد غير متوقع من auth-handler", str(result)[:150])
+
+
+def add_employee(page, role, tag):
+    seed = _qa_seed()
+    phone = f"07{seed % 100000000:08d}"
+    name = f"{QA_TAG} {role} {seed}"
+    page.evaluate(f"openAddEmployee('{role}')")
+    page.fill("#ae-full-name", name)
+    page.fill("#ae-phone", phone)
+    page.select_option("#ae-role", role)
+    page.fill("#ae-password", QA_PASSWORD)
+    page.click("#modal-add-employee button.btn-primary")
+    try:
+        page.wait_for_selector("#add-employee-alert:visible", timeout=8000)
+        alert_text = page.inner_text("#add-employee-alert")
+    except Exception:
+        alert_text = ""
+    if "✅" in alert_text or "بنجاح" in alert_text:
+        rec("PASS", "إضافة موظف", f"إضافة {role} نجحت", name)
+        return {"phone": phone, "password": QA_PASSWORD}
+    rec("FAIL", "إضافة موظف", f"فشل إضافة {role}", alert_text[:150] or "لا رسالة")
+    return None
+
+
+def exercise_role(pw_ctx, base, role, creds, tag):
+    """يسجّل دخول بحساب الموظف، يفتح كل قسم ظاهر بالقائمة الجانبية، ويتأكد من
+    عدم وجود أخطاء JS/خادم، وأن لا تظهر له أقسام محظورة على دوره."""
+    page = pw_ctx.new_page()
+    w = Watch(page, base)
+    page.goto(f"{base}/auth-system-3-1-1.html", wait_until="load")
+    page.fill("#login-identifier", creds["phone"])
+    page.fill("#login-password", creds["password"])
+    page.evaluate("doLogin()")
+    label_login = f"{tag}/{role}"
+    try:
+        page.wait_for_url("**/dashboard.html*", timeout=20000)
+    except Exception:
+        rec("FAIL", label_login, "فشل تسجيل الدخول بحساب الموظف الجديد")
+        page.close()
+        return
+    rec("PASS", label_login, "دخول الموظف نجح")
+    page.wait_for_timeout(2500)
+    page.evaluate(TOAST_HOOK)
+    for e in sorted(set(w.js_errors))[:5]:
+        rec("FAIL", f"{label_login}/تحميل", "خطأ JavaScript", e)
+    for e in sorted(set(w.fn_errors))[:5]:
+        rec("FAIL", f"{label_login}/تحميل", "ردّ خطأ من الخادم", e)
+
+    items = page.locator(".nav-item")
+    n = items.count()
+    visited = 0
+    for i in range(n):
+        el = items.nth(i)
+        try:
+            if not el.is_visible():
+                continue
+            oc = el.get_attribute("onclick") or ""
+            m = re.search(r"goTo\(\s*['\"]([^'\"]+)['\"]", oc)
+            if not m:
+                continue
+            target = m.group(1)
+            before = w.snapshot()
+            page.evaluate("window.__toasts = []")
+            el.click(timeout=4000)
+            page.wait_for_timeout(1800)
+            after = w.snapshot()
+            visited += 1
+            errs = [t for t in page.evaluate("window.__toasts || []") if t[1] == "error"]
+            label = f"{label_login}/{target}"
+            problems = False
+            if after[0] > before[0]:
+                for e in w.js_errors[before[0]:][:3]:
+                    rec("FAIL", label, "خطأ JavaScript", e)
+                problems = True
+            if after[3] > before[3]:
+                rec("FAIL", label, "ردّ خطأ من الخادم", ", ".join(sorted(set(w.fn_errors[before[3]:]))[:4]))
+                problems = True
+            if errs:
+                rec("WARN", label, "رسالة خطأ ظهرت للمستخدم", errs[0][0][:100])
+                problems = True
+            if not problems:
+                rec("PASS", label, "يفتح ويحمّل بدون أخطاء")
+        except Exception as e:  # noqa
+            rec("WARN", f"{label_login}/nav#{i}", "تعذر فتح القسم", str(e)[:100])
+    if visited == 0:
+        rec("WARN", label_login, "لم يظهر أي قسم بالقائمة لهذا الدور — تأكد أن هذا متوقع")
+    page.close()
+
+
+def phase_role_pipeline(pw, base):
+    if os.getenv("QA_ROLE_SIM", "1") != "1":
+        rec("SKIP", "محاكاة الأدوار", "معطّل عبر QA_ROLE_SIM=0")
+        return
+    browser = launch(pw, "chromium")
+    ctx = browser.new_context(viewport={"width": 1366, "height": 850}, service_workers="block")
+    stub_emailjs(ctx)
+    page = ctx.new_page()
+
+    check_otp_bypass(page, base)
+
+    owner = register_trial_owner(page, base, "trial")
+    if owner:
+        page.wait_for_timeout(1500)
+        for role in ("doctor", "secretary", "pharmacist"):  # المشمولة بالباقة التجريبية
+            creds = add_employee(page, role, "trial")
+            if creds:
+                exercise_role(ctx, base, role, creds, "trial")
+            page.bring_to_front()
+
+    # المختبر متاح فقط بباقة "مجمع كبير"، وهذه الباقة لا تُحذف بياناتها تلقائياً،
+    # لذا نعتمد على حساب دائم مُجهّز يدوياً بدل إنشاء واحد جديد بكل تشغيل.
+    if QA_LAB_ACCOUNT and ":" in QA_LAB_ACCOUNT:
+        lab_phone, lab_pwd = QA_LAB_ACCOUNT.split(":", 1)
+        owner_page = ctx.new_page()
+        owner_page.goto(f"{base}/auth-system-3-1-1.html", wait_until="load")
+        owner_page.fill("#login-identifier", lab_phone)
+        owner_page.fill("#login-password", lab_pwd)
+        owner_page.evaluate("doLogin()")
+        try:
+            owner_page.wait_for_url("**/dashboard.html*", timeout=20000)
+            creds = add_employee(owner_page, "lab", "large")
+            owner_page.close()
+            if creds:
+                exercise_role(ctx, base, "lab", creds, "large")
+        except Exception:
+            rec("FAIL", "محاكاة الأدوار/مختبر", "تعذر الدخول لحساب QA_LAB_ACCOUNT الدائم")
+    else:
+        rec("SKIP", "محاكاة الأدوار/مختبر", "أضف Secret باسم QA_LAB_ACCOUNT (07xxxxxxxx:كلمة_المرور)",
+            "حساب دائم بباقة كبير لاختبار دور المختبر")
+
+    ctx.close()
+    browser.close()
+
+
 # ------------------------------------------------------------ التقرير
 def write_report():
     counts = {k: sum(1 for r in RESULTS if r[0] == k) for k in ("PASS", "FAIL", "WARN", "SKIP")}
@@ -704,6 +949,7 @@ def main():
         phase_responsive(pw, base)
         phase_security()
         phase_logged_in(pw, base)
+        phase_role_pipeline(pw, base)
     fails = write_report()
     sys.exit(1 if fails else 0)
 
