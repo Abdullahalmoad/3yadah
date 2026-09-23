@@ -914,6 +914,7 @@ async function createAccount(status='trial') {
 
 // ===== تسجيل الدخول =====
 async function doLogin() {
+  try {
   let identifier=document.getElementById('login-identifier').value.trim();
   const password=document.getElementById('login-password').value;
   if(!identifier) return showAlert('أدخل رقم الهاتف أو البريد الإلكتروني');
@@ -929,6 +930,7 @@ async function doLogin() {
   showLoading('تسجيل الدخول...');
   const res = await authHandlerCall('login', { identifier, password });
   hideLoading();
+  alert('DEBUG LOGIN: ' + JSON.stringify(res));
 
   if(!res.ok) {
     return showAlert(res.error || 'خطأ في تسجيل الدخول');
@@ -956,6 +958,10 @@ async function doLogin() {
   }
 
   redirectAfterLogin();
+  } catch(e) {
+    hideLoading();
+    alert('DEBUG LOGIN ERROR: ' + (e && e.message ? e.message : String(e)));
+  }
 }
 
 // ===== التوجيه بعد الدخول =====
@@ -966,8 +972,4 @@ function redirectAfterLogin() {
 
   // فحص الاشتراك المدفوع
   if(user.plan!=='trial'&&user.expires_at) {
-    const exp=new Date(user.expires_at);
-    const now=new Date();
-    const daysLeft=Math.ceil((exp-now)/(1000*60*60*24));
-    const graceEnd=new Date(exp.getTime()+7*24*60*60*1000);
-    if(now>
+    const exp=new Date(u
