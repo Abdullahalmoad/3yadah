@@ -336,7 +336,8 @@ body{font-family:'Tajawal',sans-serif;background:var(--bg);color:var(--text);min
    Cards
 ══════════════════════════════════════════ */
 .card{background:var(--white);border-radius:var(--card-radius);border:1px solid var(--border);overflow:hidden;margin-bottom:20px;box-shadow:var(--shadow);}
-.card-header{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.card-header{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;row-gap:10px;}
+.card-header>div{flex-wrap:wrap;}
 .card-title{font-size:15px;font-weight:700;color:var(--text);}
 .card-body{padding:20px;}
 
