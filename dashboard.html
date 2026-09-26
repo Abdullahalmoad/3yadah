@@ -6062,6 +6062,7 @@ function initSettingsPage() {
 async function loadClinicAndUserSettings() {
   try {
     const { data, error } = await db.from('clinic_settings').select('*').eq('clinic_id', getClinicId()).single();
+    if (error) console.error('[DEBUG clinic_settings]', error);
     const s = (!error && data && data.settings) ? data.settings : null;
     if (s) {
       if (document.getElementById('clinic-name')) document.getElementById('clinic-name').value = s.name || '';
@@ -6070,10 +6071,11 @@ async function loadClinicAndUserSettings() {
       if (document.getElementById('clinic-whatsapp')) document.getElementById('clinic-whatsapp').value = s.whatsapp || '';
       if (s.specialty) localStorage.setItem('clinic_specialty', s.specialty);
     }
-  } catch(e) { /* لا يوجد إعدادات محفوظة بعد — تبقى القيم الافتراضية بالواجهة */ }
+  } catch(e) { console.error('[DEBUG clinic_settings catch]', e); }
 
   try {
     const { data, error } = await db.from('user_settings').select('*').eq('user_id', currentUser?.id).single();
+    if (error) console.error('[DEBUG user_settings]', error);
     const s = (!error && data && data.settings) ? data.settings : null;
     if (s) {
       if (document.getElementById('user-fullname') && s.fullname) document.getElementById('user-fullname').value = s.fullname;
@@ -6082,7 +6084,7 @@ async function loadClinicAndUserSettings() {
       if (document.getElementById('fee-exam') && s.fee_exam) document.getElementById('fee-exam').value = s.fee_exam;
       if (document.getElementById('fee-consult') && s.fee_consult) document.getElementById('fee-consult').value = s.fee_consult;
     }
-  } catch(e) { /* لا يوجد إعدادات محفوظة بعد — تبقى القيم الافتراضية بالواجهة */ }
+  } catch(e) { console.error('[DEBUG user_settings catch]', e); }
 }
 
 // ========== نظام الصيدلية الكامل ==========
