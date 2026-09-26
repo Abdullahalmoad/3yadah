@@ -143,7 +143,15 @@ class Watch:
                 detail = f" :: {body}"
             except Exception:
                 pass
-            self.fn_errors.append(f"{st} {url.split('/functions/v1/')[1].split('?')[0]}{detail}")
+            reqinfo = ""
+            try:
+                pd = r.request.post_data
+                if pd:
+                    j = json.loads(pd)
+                    reqinfo = f" [table={j.get('table')} op={j.get('operation')}]"
+            except Exception:
+                pass
+            self.fn_errors.append(f"{st} {url.split('/functions/v1/')[1].split('?')[0]}{reqinfo}{detail}")
 
     def _request(self, r):
         u = r.url
