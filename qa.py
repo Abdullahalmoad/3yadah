@@ -137,7 +137,13 @@ class Watch:
             if not url.endswith("favicon.ico"):
                 self.bad_files.append(f"{st} {url.replace(self.base, '')}")
         elif "/functions/v1/" in url:
-            self.fn_errors.append(f"{st} {url.split('/functions/v1/')[1].split('?')[0]}")
+            detail = ""
+            try:
+                body = r.text()[:200]
+                detail = f" :: {body}"
+            except Exception:
+                pass
+            self.fn_errors.append(f"{st} {url.split('/functions/v1/')[1].split('?')[0]}{detail}")
 
     def _request(self, r):
         u = r.url
