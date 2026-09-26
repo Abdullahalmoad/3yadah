@@ -187,23 +187,23 @@ tr:hover td{background:var(--bg);}
 .employee-form input,.employee-form select{padding:10px 13px;border:1.5px solid var(--border);border-radius:9px;font-family:'Tajawal',sans-serif;font-size:13px;outline:none;width:100%;}
 .employee-form input:focus,.employee-form select:focus{border-color:var(--primary);}
 
-/* ===== سطح المكتب: عمودان جنب بعض ===== */
-#auth-screen{display:flex;flex-direction:row;}
-.auth-bg-side{display:flex;}
-.auth-form-side{width:480px;min-height:100vh;background:#fff;display:flex;align-items:center;justify-content:center;padding:20px;overflow-y:auto;}
+/* ===== نفس تصميم الموبايل لكل الأحجام: عمود واحد، الفورم يظهر مباشرة بالأعلى ===== */
+#auth-screen{display:flex;flex-direction:column;}
+.auth-bg-side{display:none;}
+.auth-form-side{
+  width:100%;
+  min-height:100vh;
+  padding:24px 16px;
+  padding-top:48px;
+  background:linear-gradient(150deg,#0f2158 0%,#1d4ed8 55%,#3b82f6 100%);
+  display:flex;
+  align-items:flex-start;
+  justify-content:center;
+  overflow-y:auto;
+}
 
-/* ===== موبايل: عمود واحد — نخفي الخلفية الزرقاء ===== */
+/* ===== موبايل: نفس تنسيق سطح المكتب أعلاه، وتعديلات إضافية خاصة بالشاشات الصغيرة ===== */
 @media(max-width:768px){
-  #auth-screen{flex-direction:column;}
-  .auth-bg-side{display:none!important;}
-  .auth-form-side{
-    width:100%!important;
-    min-height:100vh;
-    padding:24px 16px;
-    background:linear-gradient(150deg,#0f2158 0%,#1d4ed8 55%,#3b82f6 100%);
-    align-items:flex-start;
-    padding-top:48px;
-  }
   .auth-card{
     width:100%!important;
     max-width:100%!important;
