@@ -568,7 +568,7 @@ tr:hover td{background:var(--bg);}
                 <option value="">-- اختر التخصص --</option>
               </select>
             </div>
-            <div class="form-group"><label>كلمة المرور</label><input type="text" id="emp-password" placeholder="كلمة مرور للموظف"></div>
+            <div class="form-group"><label>كلمة المرور</label><input type="password" autocomplete="new-password" id="emp-password" placeholder="كلمة مرور للموظف"></div>
           </div>
           <div style="display:flex;gap:8px;margin-top:12px;">
             <button class="btn btn-primary btn-sm" style="width:auto;" onclick="addEmployee()">حفظ الموظف</button>
@@ -1018,11 +1018,6 @@ function showSubWarning(msg, urgent=false) {
 // بياناتها (appointments, prescriptions, invoices, patients...) تبقى كما هي
 // بانتظار: إما تجديد الاشتراك (وعندها تعود كل البيانات تلقائياً)، أو حذف
 // يدوي صريح يقرره صاحب النظام بنفسه.
-async function suspendClinic(id) {
-  showLoading('تجميد حساب العيادة...');
-  await sbFetch(`clinics_auth?id=eq.${id}`,'PATCH',{status:'expired',plan:'expired',suspended_at:new Date().toISOString()});
-  hideLoading();
-}
 // ملاحظة: هذه الدالة غير مستدعاة من أي زر حالياً (وهذا متعمد، لا خطأ) —
 // تجميد عيادة من لوحة الأدمن يتم فعلياً عبر quickDeactivate أدناه. تركناها
 // كدالة عامة جاهزة لو احتجت لاحقاً تجميد عيادة تلقائياً من مكان آخر

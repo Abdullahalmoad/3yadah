@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
+<meta name="robots" content="noindex, nofollow">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <link rel="manifest" href="manifest.json">
@@ -2260,9 +2261,9 @@ function showDoctorSwitcher() {
   db.from('clinic_users').select('id,full_name').eq('role', 'doctor').then(({ data }) => {
     (data || []).filter(d => assignedDoctorIds.includes(d.id)).forEach(d => {
       const isActive = d.id === activeDoctorId;
-      list.innerHTML += `<button onclick="setActiveDoctor('${d.id}','${(d.full_name||'').replace(/'/g,"\\'")}'); closeModal('modal-doctor-switcher');"
+      list.innerHTML += `<button data-id="${escapeHtml(d.id)}" data-name="${escapeHtml(d.full_name||'')}" onclick="setActiveDoctor(this.dataset.id, this.dataset.name); closeModal('modal-doctor-switcher');"
         style="padding:14px;border-radius:10px;border:2px solid ${isActive ? 'var(--primary)' : 'var(--border)'};background:${isActive ? 'var(--primary-pale)' : '#fff'};font-size:14px;font-weight:600;cursor:pointer;text-align:right;">
-        ${isActive ? '✅ ' : ''}${d.full_name || d.id}
+        ${isActive ? '✅ ' : ''}${escapeHtml(d.full_name || d.id)}
       </button>`;
     });
     document.getElementById('modal-doctor-switcher').style.display = 'flex';
